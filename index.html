@@ -187,19 +187,25 @@ export default function App() {
 
   // --- KOMPONEN LOGO ---
   const BrandLogo = ({ size = "large" }) => (
-    <div className={`flex flex-col items-center justify-center ${size === 'large' ? 'mb-8' : 'mb-0'}`}>
+    <div className={`flex flex-col items-center justify-center ${size === 'large' ? 'mb-8' : 'mb-0 shrink-0'}`}>
       <img 
-        src="./logo.png" 
+        src="logo.png" 
         alt="Logo Muiz Banner Empire" 
-        className={`${size === 'large' ? 'h-24 w-auto object-contain mb-3 drop-shadow-md' : 'h-10 w-auto object-contain'}`}
+        style={{ 
+          height: size === 'large' ? '120px' : '42px', 
+          width: size === 'large' ? 'auto' : '42px', 
+          maxWidth: '100%', 
+          objectFit: 'contain' 
+        }}
+        className={size === 'large' ? 'mb-3 drop-shadow-md' : 'bg-white rounded-lg p-1 shadow-sm'}
         onError={(e) => {
-          // Gambar ganti (placeholder) sekiranya logo.png belum di-upload/dijumpai
+          // Gambar ganti sekiranya logo.png gagal dijumpai
           e.target.onerror = null; 
-          e.target.src = "https://placehold.co/300x300/2563eb/ffffff?text=LOGO+SINI";
+          e.target.src = "https://placehold.co/100x100/2563eb/ffffff?text=MBE";
         }}
       />
       {size === 'large' && (
-        <div className="text-center">
+        <div className="text-center mt-3">
           <h1 className="text-2xl font-black text-gray-800 tracking-tight">MUIZ BANNER</h1>
           <p className="text-sm font-bold text-gray-500 tracking-widest uppercase">Empire</p>
         </div>
@@ -291,9 +297,11 @@ export default function App() {
 function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, users, storeLocation, setStoreLocation, bypassGps, setBypassGps, db, appId, BrandLogo }) {
   const [tab, setTab] = useState('cuti');
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [deleteAttConfirmId, setDeleteAttConfirmId] = useState(null); // State untuk padam kehadiran
 
   // Helper Doc Ref
   const getLeaveDocRef = (id) => typeof __app_id !== 'undefined' ? doc(db, 'artifacts', appId, 'public', 'data', 'leaves', id) : doc(db, 'leaves', id);
+  const getAttendanceDocRef = (id) => typeof __app_id !== 'undefined' ? doc(db, 'artifacts', appId, 'public', 'data', 'attendances', id) : doc(db, 'attendances', id);
 
   const handleStatusCuti = async (id, status) => {
     try { await updateDoc(getLeaveDocRef(id), { status }); } 
@@ -305,6 +313,13 @@ function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, user
       await deleteDoc(getLeaveDocRef(id));
       setDeleteConfirmId(null);
     } catch (e) { alert("Ralat padam: " + e.message); }
+  };
+
+  const executeDeleteAttendance = async (id) => {
+    try {
+      await deleteDoc(getAttendanceDocRef(id));
+      setDeleteAttConfirmId(null);
+    } catch (e) { alert("Ralat padam kehadiran: " + e.message); }
   };
 
   const setLocationToCurrent = () => {
@@ -415,6 +430,19 @@ function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, user
                       <div className="flex justify-between border-b border-gray-50 pb-1"><span className="font-bold">M. Rehat:</span> <span className="font-medium text-gray-900">{att.breakIn || '-'}</span></div>
                       <div className="flex justify-between text-purple-700 bg-purple-50 p-1.5 rounded-lg"><span className="font-bold">OT Masuk:</span> <span>{att.otIn || '-'}</span></div>
                       <div className="flex justify-between text-purple-700 bg-purple-50 p-1.5 rounded-lg"><span className="font-bold">OT Keluar:</span> <span>{att.otOut || '-'}</span></div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                      {deleteAttConfirmId === att.id ? (
+                        <div className="flex gap-2 w-full">
+                          <button onClick={() => executeDeleteAttendance(att.id)} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-red-700 shadow-md transition-colors">Pasti Padam?</button>
+                          <button onClick={() => setDeleteAttConfirmId(null)} className="flex-1 bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-300 transition-colors">Batal</button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setDeleteAttConfirmId(att.id)} className="w-full text-red-600 hover:text-red-700 hover:bg-red-100 bg-red-50 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors">
+                          <Trash2 size={18} /> Padam Rekod Ini
+                        </button>
+                      )}
                     </div>
                   </div>
                 )
