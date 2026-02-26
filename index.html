@@ -1,0 +1,733 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  User, ShieldCheck, MapPin, Clock, Calendar, 
+  CheckCircle, XCircle, Trash2, LogOut, AlertTriangle, Play
+} from 'lucide-react';
+
+// --- FIREBASE IMPORTS ---
+import { initializeApp } from "firebase/app";
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
+import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
+
+export default function App() {
+  // --- STATE FIREBASE & PENGGUNA ---
+  const [firebaseUser, setFirebaseUser] = useState(null);
+  const [db, setDb] = useState(null);
+  const [appId, setAppId] = useState('default-app-id');
+  const [isDbReady, setIsDbReady] = useState(false);
+
+  const [currentUser, setCurrentUser] = useState(null);
+  const [usernameInput, setUsernameInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [loginError, setLoginError] = useState('');
+  
+  // --- DATA DARI FIREBASE ---
+  const [leaves, setLeaves] = useState([]);
+  const [attendances, setAttendances] = useState([]);
+
+  // --- MOCK DATA PENGGUNA (Boleh dipindahkan ke DB nanti) ---
+  const users = [
+    { id: 'MZBEBOSS001', password: 'admin', name: 'MUIZZUDDIN BIN AB.LLAH', role: 'admin' },
+    { id: 'MZBE072022', password: 'MZBE072022', name: 'NUR MAISARAH BINTI AHMAD RIZAL', role: 'pekerja' },
+    { id: 'MZBE082022', password: 'MZBE082022', name: 'WAN ADIB ASHRAF BIN AB WAHAB', role: 'pekerja' },
+    { id: 'MZBE092022', password: 'MZBE092022', name: 'AMMAR ZAKWAN BIN DAUD', role: 'pekerja' },
+    { id: 'MZBE102022', password: 'MZBE102022', name: 'ATHIRAH BINTI MOHD ZEIN', role: 'pekerja' },
+    { id: 'MZBE012024', password: 'MZBE012024', name: 'AHMAD BUKHARIE BIN FAIZAL NORHADI', role: 'pekerja' },
+    { id: 'MZBE022024', password: 'MZBE022024', name: 'NURLAILI BINTI ZAHARI', role: 'pekerja' },
+    { id: 'MZBE022025', password: 'MZBE022025', name: 'ABDUL RAHMAN BIN S. HAMID', role: 'pekerja' },
+    { id: 'MZBE032025', password: 'MZBE032025', name: 'MUHAMMAD AIMAN BIN MOHD ZULKIFLI', role: 'pekerja' },
+    { id: 'MZBE042025', password: 'MZBE042025', name: 'FATIN AMIERA BINTI RAZIHA', role: 'pekerja' }
+  ];
+
+  // --- TETAPAN SISTEM ---
+  const [storeLocation, setStoreLocation] = useState({ lat: 5.76981, lng: 102.56142 }); 
+  const [bypassGps, setBypassGps] = useState(false); 
+  const [modalMsg, setModalMsg] = useState(null);
+
+  // ==========================================
+  // SETUP FIREBASE
+  // ==========================================
+  useEffect(() => {
+    // 1. Dapatkan Config Firebase
+    let firebaseConfig = {};
+    if (typeof __firebase_config !== 'undefined') {
+      firebaseConfig = JSON.parse(__firebase_config); // Config dari persekitaran preview
+    } else {
+      // ⚠️ GANTIKAN CONFIG INI DENGAN FIREBASE ANDA UNTUK GITHUB / STANDALONE
+      firebaseConfig = {
+        apiKey: "API_KEY_ANDA",
+        authDomain: "PROJECT_ID_ANDA.firebaseapp.com",
+        projectId: "PROJECT_ID_ANDA",
+        storageBucket: "PROJECT_ID_ANDA.appspot.com",
+        messagingSenderId: "SENDER_ID_ANDA",
+        appId: "APP_ID_ANDA"
+      };
+    }
+    
+    // 2. Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const authInstance = getAuth(app);
+    const dbInstance = getFirestore(app);
+    setDb(dbInstance);
+
+    if (typeof __app_id !== 'undefined') {
+      setAppId(__app_id);
+    }
+
+    // 3. Autentikasi Firebase (Wajib untuk DB Security)
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(authInstance, __initial_auth_token);
+        } else {
+          await signInAnonymously(authInstance);
+        }
+      } catch (error) {
+        console.error("Ralat Log Masuk Firebase:", error);
+      }
+    };
+    initAuth();
+
+    const unsubscribe = onAuthStateChanged(authInstance, (u) => {
+      setFirebaseUser(u);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // ==========================================
+  // FETCH DATA FIREBASE MASA NYATA (REALTIME)
+  // ==========================================
+  // Fungsi Helper untuk dapatkan lokasi rujukan (Ref) yang betul
+  const getLeavesRef = () => {
+    if (typeof __app_id !== 'undefined') return collection(db, 'artifacts', appId, 'public', 'data', 'leaves');
+    return collection(db, 'leaves'); // Untuk kegunaan standalone GitHub
+  };
+  
+  const getAttendancesRef = () => {
+    if (typeof __app_id !== 'undefined') return collection(db, 'artifacts', appId, 'public', 'data', 'attendances');
+    return collection(db, 'attendances'); // Untuk kegunaan standalone GitHub
+  };
+
+  useEffect(() => {
+    if (!firebaseUser || !db) return;
+
+    // Listener untuk Cuti
+    const unsubLeaves = onSnapshot(getLeavesRef(), (snapshot) => {
+      const leavesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setLeaves(leavesData);
+    }, (error) => console.error("Ralat Cuti:", error));
+
+    // Listener untuk Kehadiran
+    const unsubAttendances = onSnapshot(getAttendancesRef(), (snapshot) => {
+      const attData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAttendances(attData);
+      setIsDbReady(true);
+    }, (error) => console.error("Ralat Kehadiran:", error));
+
+    return () => {
+      unsubLeaves();
+      unsubAttendances();
+    };
+  }, [firebaseUser, db]);
+
+
+  // --- FUNGSI UTILITI ---
+  function getToday() { return new Date().toLocaleDateString('en-CA'); }
+  function getCurrentTime() { return new Date().toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', hour12: true }); }
+  
+  function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; 
+    const p1 = lat1 * Math.PI/180;
+    const p2 = lat2 * Math.PI/180;
+    const dp = (lat2-lat1) * Math.PI/180;
+    const dl = (lon2-lon1) * Math.PI/180;
+    const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  const verifyLocationAndExecute = (actionName, callback) => {
+    if (bypassGps) { callback(); return; }
+    if (!navigator.geolocation) {
+      setModalMsg({ type: 'error', text: 'Sistem GPS tidak disokong pada peranti anda.' });
+      return;
+    }
+    setModalMsg({ type: 'info', text: 'Sedang mengesahkan lokasi anda...' });
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const dist = getDistanceInMeters(position.coords.latitude, position.coords.longitude, storeLocation.lat, storeLocation.lng);
+        if (dist <= 150) {
+          setModalMsg(null);
+          callback();
+        } else {
+          setModalMsg({ type: 'error', text: `Jarak anda: ${Math.round(dist)} meter dari kedai. Mesti di dalam radius 150 meter untuk ${actionName}.` });
+        }
+      },
+      (error) => { setModalMsg({ type: 'error', text: 'Gagal mendapatkan lokasi. Sila pastikan GPS dihidupkan.' }); },
+      { enableHighAccuracy: true }
+    );
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if(!isDbReady) {
+      setLoginError('Sistem sedang menyambung ke pangkalan data. Sila tunggu seketika...');
+      return;
+    }
+    const user = users.find(u => u.id === usernameInput.trim().toUpperCase() && u.password === passwordInput);
+    if (user) {
+      setCurrentUser(user);
+      setUsernameInput('');
+      setPasswordInput('');
+      setLoginError('');
+    } else {
+      setLoginError('ID Pengguna atau Kata Laluan salah.');
+    }
+  };
+
+  // --- KOMPONEN LOGO ---
+  const BrandLogo = ({ size = "large" }) => (
+    <div className={`flex flex-col items-center justify-center ${size === 'large' ? 'mb-8' : 'mb-0'}`}>
+      <img 
+        src="./logo.png" 
+        alt="Logo Muiz Banner Empire" 
+        className={`${size === 'large' ? 'h-24 w-auto object-contain mb-3 drop-shadow-md' : 'h-10 w-auto object-contain'}`}
+        onError={(e) => {
+          // Gambar ganti (placeholder) sekiranya logo.png belum di-upload/dijumpai
+          e.target.onerror = null; 
+          e.target.src = "https://placehold.co/300x300/2563eb/ffffff?text=LOGO+SINI";
+        }}
+      />
+      {size === 'large' && (
+        <div className="text-center">
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">MUIZ BANNER</h1>
+          <p className="text-sm font-bold text-gray-500 tracking-widest uppercase">Empire</p>
+        </div>
+      )}
+    </div>
+  );
+
+  // --- KOMPONEN LOGIN ---
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-gray-100">
+          
+          <BrandLogo size="large" />
+          
+          <form onSubmit={handleLogin} className="space-y-5">
+            {loginError && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm text-center font-medium border border-red-200">
+                {loginError}
+              </div>
+            )}
+            
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1">ID Pengguna</label>
+              <input 
+                type="text" 
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                placeholder="Masukkan ID"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-0 focus:border-blue-500 outline-none uppercase transition-colors"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1">Kata Laluan</label>
+              <input 
+                type="password" 
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="Masukkan kata laluan"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-0 focus:border-blue-500 outline-none transition-colors"
+                required
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className={`w-full py-3.5 px-4 rounded-xl text-white font-bold transition-all shadow-lg flex items-center justify-center gap-2 ${!isDbReady ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-95'}`}
+              disabled={!isDbReady}
+            >
+               {isDbReady ? 'Log Masuk Sistem' : 'Menyambung ke Database...'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // --- ANTARA MUKA ADMIN ---
+  if (currentUser.role === 'admin') {
+    return (
+      <AdminDashboard 
+        currentUser={currentUser} setCurrentUser={setCurrentUser}
+        leaves={leaves} attendances={attendances} users={users}
+        storeLocation={storeLocation} setStoreLocation={setStoreLocation}
+        bypassGps={bypassGps} setBypassGps={setBypassGps}
+        db={db} appId={appId} BrandLogo={BrandLogo}
+      />
+    );
+  }
+
+  // --- ANTARA MUKA PEKERJA ---
+  return (
+    <EmployeeDashboard 
+      currentUser={currentUser} setCurrentUser={setCurrentUser}
+      leaves={leaves} attendances={attendances}
+      verifyLocationAndExecute={verifyLocationAndExecute}
+      modalMsg={modalMsg} setModalMsg={setModalMsg}
+      getToday={getToday} getCurrentTime={getCurrentTime}
+      db={db} appId={appId} BrandLogo={BrandLogo}
+    />
+  );
+}
+
+// ==========================================
+// PENGURUSAN ADMIN
+// ==========================================
+function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, users, storeLocation, setStoreLocation, bypassGps, setBypassGps, db, appId, BrandLogo }) {
+  const [tab, setTab] = useState('cuti');
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  // Helper Doc Ref
+  const getLeaveDocRef = (id) => typeof __app_id !== 'undefined' ? doc(db, 'artifacts', appId, 'public', 'data', 'leaves', id) : doc(db, 'leaves', id);
+
+  const handleStatusCuti = async (id, status) => {
+    try { await updateDoc(getLeaveDocRef(id), { status }); } 
+    catch (e) { alert("Ralat kemaskini: " + e.message); }
+  };
+
+  const executeDeleteCuti = async (id) => {
+    try {
+      await deleteDoc(getLeaveDocRef(id));
+      setDeleteConfirmId(null);
+    } catch (e) { alert("Ralat padam: " + e.message); }
+  };
+
+  const setLocationToCurrent = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        setStoreLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        alert("Lokasi kedai berjaya dikemaskini ke lokasi anda sekarang!");
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <BrandLogo size="small" />
+          <div>
+            <h1 className="font-bold text-lg">Panel Admin</h1>
+            <p className="text-xs text-blue-100 truncate w-48">{currentUser.name}</p>
+          </div>
+        </div>
+        <button onClick={() => setCurrentUser(null)} className="p-2 bg-blue-700 rounded-full hover:bg-blue-800 transition-colors">
+          <LogOut size={18} />
+        </button>
+      </div>
+
+      <div className="p-4 max-w-4xl mx-auto space-y-6">
+        <div className="flex bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+          <button onClick={() => setTab('cuti')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'cuti' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Cuti</button>
+          <button onClick={() => setTab('kehadiran')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'kehadiran' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Kehadiran</button>
+          <button onClick={() => setTab('tetapan')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'tetapan' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Sistem</button>
+        </div>
+
+        {tab === 'cuti' && (
+          <div className="space-y-4">
+            <h2 className="font-bold text-gray-700 flex items-center gap-2"><Calendar size={20}/> Permohonan Cuti</h2>
+            {leaves.length === 0 ? (
+              <p className="text-gray-500 text-center py-8 bg-white rounded-xl border border-dashed">Tiada rekod cuti setakat ini.</p>
+            ) : (
+              [...leaves].reverse().map(leave => {
+                const user = users.find(u => u.id === leave.userId);
+                return (
+                  <div key={leave.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="font-bold text-gray-800 text-lg">{user?.name}</h3>
+                        <p className="text-sm text-gray-500">{leave.date} • <span className="font-bold text-blue-600">{leave.type}</span></p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                        leave.status === 'Lulus' ? 'bg-green-100 text-green-700' : 
+                        leave.status === 'Ditolak' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {leave.status}
+                      </span>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 mb-4">
+                      <p className="text-sm text-gray-600"><span className="font-bold">Sebab:</span> {leave.reason}</p>
+                    </div>
+                    
+                    <div className="flex gap-2 border-t border-gray-100 pt-4">
+                      {leave.status === 'Pending' && (
+                        <>
+                          <button onClick={() => handleStatusCuti(leave.id, 'Lulus')} className="flex-1 bg-green-50 text-green-600 py-2.5 rounded-xl text-sm font-bold hover:bg-green-100 flex justify-center items-center gap-2 transition-colors">
+                            <CheckCircle size={18}/> Lulus
+                          </button>
+                          <button onClick={() => handleStatusCuti(leave.id, 'Ditolak')} className="flex-1 bg-red-50 text-red-600 py-2.5 rounded-xl text-sm font-bold hover:bg-red-100 flex justify-center items-center gap-2 transition-colors">
+                            <XCircle size={18}/> Tolak
+                          </button>
+                        </>
+                      )}
+                      
+                      {deleteConfirmId === leave.id ? (
+                        <div className="flex-1 flex gap-2">
+                          <button onClick={() => executeDeleteCuti(leave.id)} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-red-700 shadow-md">Pasti Padam?</button>
+                          <button onClick={() => setDeleteConfirmId(null)} className="flex-1 bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-300">Batal</button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setDeleteConfirmId(leave.id)} className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 flex justify-center items-center gap-2 transition-colors">
+                          <Trash2 size={18}/> Padam
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        )}
+
+        {tab === 'kehadiran' && (
+          <div className="space-y-4">
+            <h2 className="font-bold text-gray-700 flex items-center gap-2"><Clock size={20}/> Rekod Kehadiran Langsung</h2>
+            {attendances.length === 0 ? (
+               <p className="text-gray-500 text-center py-8 bg-white rounded-xl border border-dashed">Tiada rekod kehadiran.</p>
+            ) : (
+              [...attendances].reverse().map((att, idx) => {
+                const user = users.find(u => u.id === att.userId);
+                return (
+                  <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 text-sm">
+                    <div className="font-bold text-gray-800 mb-3 border-b border-gray-100 pb-3 flex justify-between items-center">
+                      <span className="text-base">{user?.name}</span>
+                      <span className="text-gray-500 bg-gray-100 px-2 py-1 rounded-md font-medium text-xs">{att.date}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-gray-600">
+                      <div className="flex justify-between border-b border-gray-50 pb-1"><span className="font-bold">Masuk:</span> <span className="font-medium text-gray-900">{att.clockIn || '-'}</span></div>
+                      <div className="flex justify-between border-b border-gray-50 pb-1"><span className="font-bold">Keluar:</span> <span className="font-medium text-gray-900">{att.clockOut || '-'}</span></div>
+                      <div className="flex justify-between border-b border-gray-50 pb-1"><span className="font-bold">K. Rehat:</span> <span className="font-medium text-gray-900">{att.breakOut || '-'}</span></div>
+                      <div className="flex justify-between border-b border-gray-50 pb-1"><span className="font-bold">M. Rehat:</span> <span className="font-medium text-gray-900">{att.breakIn || '-'}</span></div>
+                      <div className="flex justify-between text-purple-700 bg-purple-50 p-1.5 rounded-lg"><span className="font-bold">OT Masuk:</span> <span>{att.otIn || '-'}</span></div>
+                      <div className="flex justify-between text-purple-700 bg-purple-50 p-1.5 rounded-lg"><span className="font-bold">OT Keluar:</span> <span>{att.otOut || '-'}</span></div>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        )}
+
+        {tab === 'tetapan' && (
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+            <div>
+              <h2 className="font-bold text-gray-800 text-lg flex items-center gap-2 mb-2"><MapPin className="text-blue-600"/> Geofence (Kawasan Kedai)</h2>
+              <p className="text-sm text-gray-500 mb-4">Pekerja mesti berada dalam jarak 150 meter dari titik ini untuk merekod kehadiran.</p>
+              
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-800 font-medium mb-4 flex justify-between items-center">
+                <div>
+                  <span className="block text-xs text-blue-500 uppercase tracking-wider">Koordinat Semasa</span>
+                  Lat: {storeLocation.lat}<br/>Lng: {storeLocation.lng}
+                </div>
+                <MapPin size={32} className="text-blue-200" />
+              </div>
+
+              <button onClick={setLocationToCurrent} className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-blue-700 shadow-md active:scale-95 transition-all">
+                Kemaskini Ke Lokasi GPS Saya Sekarang
+              </button>
+            </div>
+
+            <hr className="border-gray-100" />
+            
+            <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <div>
+                <h3 className="font-bold text-gray-800">Bypass Sistem GPS</h3>
+                <p className="text-xs text-gray-500 mt-1">Hanya aktifkan untuk tujuan ujian.</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={bypassGps} onChange={(e) => setBypassGps(e.target.checked)} />
+                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+// ==========================================
+// PENGURUSAN PEKERJA
+// ==========================================
+function EmployeeDashboard({ currentUser, setCurrentUser, leaves, attendances, verifyLocationAndExecute, modalMsg, setModalMsg, getToday, getCurrentTime, db, appId, BrandLogo }) {
+  const [tab, setTab] = useState('kehadiran');
+  const [leaveType, setLeaveType] = useState('Cuti Bergaji');
+  const [leaveDate, setLeaveDate] = useState(getToday());
+  const [leaveReason, setLeaveReason] = useState('');
+
+  const today = getToday();
+
+  // Helper Refs
+  const getLeavesRef = () => typeof __app_id !== 'undefined' ? collection(db, 'artifacts', appId, 'public', 'data', 'leaves') : collection(db, 'leaves');
+  const getAttendancesRef = () => typeof __app_id !== 'undefined' ? collection(db, 'artifacts', appId, 'public', 'data', 'attendances') : collection(db, 'attendances');
+  const getAttendanceDocRef = (id) => typeof __app_id !== 'undefined' ? doc(db, 'artifacts', appId, 'public', 'data', 'attendances', id) : doc(db, 'attendances', id);
+
+  const isOnLeaveToday = leaves.some(l => l.userId === currentUser.id && l.date === today && l.status === 'Lulus');
+  const todayRecord = attendances.find(a => a.userId === currentUser.id && a.date === today) || {
+    clockIn: null, breakOut: null, breakIn: null, clockOut: null, otIn: null, otOut: null
+  };
+
+  const submitLeave = async (e) => {
+    e.preventDefault();
+    if(!leaveReason) return alert('Sila masukkan sebab cuti.'); 
+    
+    try {
+      await addDoc(getLeavesRef(), {
+        userId: currentUser.id, type: leaveType, date: leaveDate,
+        reason: leaveReason, status: 'Pending', timestamp: Date.now()
+      });
+      setLeaveReason('');
+      alert('Permohonan cuti berjaya dihantar ke Pangkalan Data.');
+      setTab('rekod_cuti');
+    } catch (error) {
+      alert("Ralat menghantar cuti: " + error.message);
+    }
+  };
+
+  const recordTime = async (field) => {
+    const timeNow = getCurrentTime();
+    try {
+      if (todayRecord.id) {
+        // Update rekod hari ini
+        await updateDoc(getAttendanceDocRef(todayRecord.id), { [field]: timeNow });
+      } else {
+        // Cipta rekod baharu hari ini
+        await addDoc(getAttendancesRef(), {
+          userId: currentUser.id, date: today,
+          clockIn: null, breakOut: null, breakIn: null, clockOut: null, otIn: null, otOut: null,
+          [field]: timeNow
+        });
+      }
+      setModalMsg({ type: 'success', text: `Berjaya direkod di Cloud: ${timeNow}` });
+      setTimeout(() => setModalMsg(null), 3000);
+    } catch (error) {
+      setModalMsg({ type: 'error', text: 'Ralat Rangkaian: ' + error.message });
+    }
+  };
+
+  const handleAction = (field, actionName) => {
+    verifyLocationAndExecute(actionName, () => recordTime(field));
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20 relative">
+      <div className="bg-green-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <BrandLogo size="small" />
+          <div>
+            <h1 className="font-bold text-lg leading-tight truncate w-48">{currentUser.name}</h1>
+            <p className="text-xs text-green-100">Portal Pekerja</p>
+          </div>
+        </div>
+        <button onClick={() => setCurrentUser(null)} className="p-2 bg-green-700 rounded-full hover:bg-green-800 transition-colors">
+          <LogOut size={18} />
+        </button>
+      </div>
+
+      {modalMsg && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl animate-in zoom-in duration-200">
+            {modalMsg.type === 'error' && <AlertTriangle className="mx-auto text-red-500 mb-4" size={56} />}
+            {modalMsg.type === 'success' && <CheckCircle className="mx-auto text-green-500 mb-4" size={56} />}
+            {modalMsg.type === 'info' && <MapPin className="mx-auto text-blue-500 mb-4 animate-bounce" size={56} />}
+            
+            <p className="text-gray-800 font-bold text-lg mb-6 leading-snug">{modalMsg.text}</p>
+            
+            {modalMsg.type !== 'info' && (
+              <button onClick={() => setModalMsg(null)} className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold active:scale-95 transition-all shadow-md">
+                Tutup Mesej
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="p-4 max-w-md mx-auto space-y-6 mt-2">
+        <div className="flex bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+          <button onClick={() => setTab('kehadiran')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'kehadiran' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Kedatangan</button>
+          <button onClick={() => setTab('mohon_cuti')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'mohon_cuti' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Mohon Cuti</button>
+          <button onClick={() => setTab('rekod_cuti')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'rekod_cuti' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Sejarah</button>
+        </div>
+
+        {tab === 'kehadiran' && (
+          <div className="space-y-5">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-blue-500"></div>
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Tarikh Semasa</p>
+              <h2 className="text-2xl font-black text-gray-800">{new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
+            </div>
+
+            {isOnLeaveToday ? (
+              <div className="bg-orange-50 border border-orange-200 p-8 rounded-3xl text-center shadow-sm">
+                <Calendar className="mx-auto text-orange-500 mb-4" size={56} />
+                <h3 className="text-xl font-black text-orange-800 mb-2">Anda Sedang Bercuti</h3>
+                <p className="text-orange-700 text-sm font-medium leading-relaxed">Kehadiran dikunci pada hari cuti. Hubungi Admin jika ini adalah satu kesilapan.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    disabled={todayRecord.clockIn} onClick={() => handleAction('clockIn', 'Clock In')}
+                    className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${
+                      todayRecord.clockIn ? 'bg-gray-100 text-gray-400' : 'bg-green-500 text-white shadow-lg shadow-green-200 hover:bg-green-600 active:scale-95'
+                    }`}
+                  >
+                    <Clock size={32} />
+                    <span className="font-black tracking-wide">CLOCK IN</span>
+                    {todayRecord.clockIn && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.clockIn}</span>}
+                  </button>
+
+                  <button 
+                    disabled={!todayRecord.clockIn || todayRecord.clockOut} onClick={() => handleAction('clockOut', 'Clock Out')}
+                    className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${
+                      (!todayRecord.clockIn || todayRecord.clockOut) ? 'bg-gray-100 text-gray-400' : 'bg-red-500 text-white shadow-lg shadow-red-200 hover:bg-red-600 active:scale-95'
+                    }`}
+                  >
+                    <LogOut size={32} />
+                    <span className="font-black tracking-wide">CLOCK OUT</span>
+                    {todayRecord.clockOut && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.clockOut}</span>}
+                  </button>
+
+                  <button 
+                    disabled={!todayRecord.clockIn || todayRecord.breakOut} onClick={() => handleAction('breakOut', 'Keluar Rehat')}
+                    className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${
+                      (!todayRecord.clockIn || todayRecord.breakOut) ? 'bg-gray-100 text-gray-400' : 'bg-yellow-500 text-white shadow-lg shadow-yellow-200 hover:bg-yellow-600 active:scale-95'
+                    }`}
+                  >
+                    <Play size={32} className="rotate-90"/>
+                    <span className="font-bold">Keluar Rehat</span>
+                    {todayRecord.breakOut && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.breakOut}</span>}
+                  </button>
+
+                  <button 
+                    disabled={!todayRecord.breakOut || todayRecord.breakIn} onClick={() => handleAction('breakIn', 'Masuk Rehat')}
+                    className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${
+                      (!todayRecord.breakOut || todayRecord.breakIn) ? 'bg-gray-100 text-gray-400' : 'bg-blue-500 text-white shadow-lg shadow-blue-200 hover:bg-blue-600 active:scale-95'
+                    }`}
+                  >
+                    <Play size={32} className="-rotate-90"/>
+                    <span className="font-bold">Masuk Rehat</span>
+                    {todayRecord.breakIn && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.breakIn}</span>}
+                  </button>
+                </div>
+
+                <div className="bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                  <h3 className="text-sm font-black text-purple-800 mb-3 flex items-center gap-2"><Clock size={16}/> KERJA LEBIH MASA (OT)</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button 
+                      disabled={todayRecord.otIn} onClick={() => handleAction('otIn', 'OT Masuk')}
+                      className={`p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${
+                        todayRecord.otIn ? 'bg-white text-gray-400 border border-gray-200' : 'bg-purple-600 text-white shadow-md hover:bg-purple-700 active:scale-95'
+                      }`}
+                    >
+                      <span className="font-bold text-sm">OT Masuk</span>
+                      {todayRecord.otIn && <span className="text-xs">{todayRecord.otIn}</span>}
+                    </button>
+
+                    <button 
+                      disabled={!todayRecord.otIn || todayRecord.otOut} onClick={() => handleAction('otOut', 'OT Keluar')}
+                      className={`p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${
+                        (!todayRecord.otIn || todayRecord.otOut) ? 'bg-white text-gray-400 border border-gray-200' : 'bg-purple-800 text-white shadow-md hover:bg-purple-900 active:scale-95'
+                      }`}
+                    >
+                      <span className="font-bold text-sm">OT Keluar</span>
+                      {todayRecord.otOut && <span className="text-xs">{todayRecord.otOut}</span>}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'mohon_cuti' && (
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h2 className="font-black text-gray-800 mb-5 text-xl">Borang Cuti</h2>
+            <form onSubmit={submitLeave} className="space-y-5">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Jenis Cuti</label>
+                <select 
+                  value={leaveType} onChange={(e) => setLeaveType(e.target.value)}
+                  className="w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-0 focus:border-green-500 outline-none font-medium bg-gray-50"
+                >
+                  <option>Cuti Bergaji</option>
+                  <option>Cuti Tanpa Gaji</option>
+                  <option>Cuti Sakit (MC)</option>
+                  <option>Cuti Kecemasan</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Tarikh Cuti</label>
+                <input 
+                  type="date" value={leaveDate} min={getToday()} onChange={(e) => setLeaveDate(e.target.value)}
+                  className="w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-0 focus:border-green-500 outline-none font-medium bg-gray-50"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">Sebab Penuh</label>
+                <textarea 
+                  value={leaveReason} onChange={(e) => setLeaveReason(e.target.value)}
+                  placeholder="Sila nyatakan sebab permohonan dengan jelas..."
+                  className="w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-0 focus:border-green-500 outline-none h-28 resize-none font-medium bg-gray-50"
+                  required
+                ></textarea>
+              </div>
+
+              <button type="submit" className="w-full bg-green-600 text-white font-black py-4 rounded-xl hover:bg-green-700 transition-colors shadow-lg active:scale-95">
+                Hantar Ke Admin
+              </button>
+            </form>
+          </div>
+        )}
+
+        {tab === 'rekod_cuti' && (
+          <div className="space-y-4">
+            <h2 className="font-bold text-gray-700 mb-2">Sejarah Cuti (Cloud)</h2>
+            {leaves.filter(l => l.userId === currentUser.id).reverse().map((leave, idx) => (
+              <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-black text-gray-800">{leave.type}</h3>
+                    <p className="text-sm font-medium text-gray-500">{leave.date}</p>
+                  </div>
+                  <span className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest ${
+                    leave.status === 'Lulus' ? 'bg-green-100 text-green-700' : 
+                    leave.status === 'Ditolak' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {leave.status}
+                  </span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                   <p className="text-sm text-gray-600 font-medium"><span className="font-bold text-gray-800">Sebab:</span> {leave.reason}</p>
+                </div>
+              </div>
+            ))}
+            {leaves.filter(l => l.userId === currentUser.id).length === 0 && (
+              <p className="text-gray-500 text-center py-8 bg-white rounded-xl border border-dashed font-medium">Tiada permohonan cuti direkodkan.</p>
+            )}
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
