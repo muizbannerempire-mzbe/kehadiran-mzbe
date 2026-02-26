@@ -23,6 +23,7 @@
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-100 antialiased">
@@ -32,10 +33,9 @@
         const { useState, useEffect } = React;
 
         // ==========================================
-        // IKON-IKON (Menggantikan perpustakaan luar)
+        // IKON-IKON
         // ==========================================
         const IconUser = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-        const IconShieldCheck = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>;
         const IconMapPin = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
         const IconClock = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
         const IconCalendar = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
@@ -45,6 +45,25 @@
         const IconLogOut = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>;
         const IconAlertTriangle = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
         const IconPlay = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>;
+        const IconBell = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>;
+
+        // ==========================================
+        // DATA CUTI UMUM 2026
+        // ==========================================
+        const publicHolidays2026 = [
+            { id: 1, dateStr: '17 Januari (Sabtu)', event: 'Israk Mikraj' },
+            { id: 2, dateStr: '17 Feb (Selasa)', event: 'Tahun Baru Cina' },
+            { id: 3, dateStr: '7 Mac (Sabtu)', event: 'Nuzul Quran' },
+            { id: 4, dateStr: '21 Mac (Sabtu)', event: 'Hari Raya Aidilfitri' },
+            { id: 5, dateStr: '22 Mac (Ahad)', event: 'Hari Raya Aidilfitri' },
+            { id: 6, dateStr: '26 April (Ahad)', event: 'Hari Keputeraan DYMM Sultan Terengganu' },
+            { id: 7, dateStr: '27 Mei (Rabu)', event: 'Hari Raya Haji' },
+            { id: 8, dateStr: '28 Mei (Khamis)', event: 'Hari Raya Haji' },
+            { id: 9, dateStr: '1 Jun (Isnin)', event: 'Hari Keputeraan Agong' },
+            { id: 10, dateStr: '17 Jun (Rabu)', event: 'Awal Muharram' },
+            { id: 11, dateStr: '31 Ogos (Isnin)', event: 'Hari Kemerdekaan' },
+            { id: 12, dateStr: '16 September (Rabu)', event: 'Hari Malaysia' },
+        ];
 
         // ==========================================
         // KONFIGURASI FIREBASE
@@ -58,7 +77,6 @@
             appId: "1:57438014766:web:63730481e6d649a9393ebf"
         };
 
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -78,6 +96,7 @@
             
             const [leaves, setLeaves] = useState([]);
             const [attendances, setAttendances] = useState([]);
+            const [specialRequests, setSpecialRequests] = useState([]); // State baru untuk Mohon Lambat/Awal
 
             const users = [
                 { id: 'MZBEBOSS001', password: 'admin', name: 'MUIZZUDDIN BIN AB.LLAH', role: 'admin' },
@@ -98,9 +117,7 @@
 
             useEffect(() => {
                 auth.signInAnonymously().catch((error) => console.error("Ralat Auth:", error));
-                const unsubscribe = auth.onAuthStateChanged((user) => {
-                    setFirebaseUser(user);
-                });
+                const unsubscribe = auth.onAuthStateChanged((user) => setFirebaseUser(user));
                 return () => unsubscribe();
             }, []);
 
@@ -116,7 +133,12 @@
                     setIsDbReady(true);
                 });
 
-                return () => { unsubLeaves(); unsubAtt(); };
+                // Tarik data permohonan khas (Masuk Lambat/Keluar Awal)
+                const unsubReq = db.collection('special_requests').onSnapshot(snapshot => {
+                    setSpecialRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                });
+
+                return () => { unsubLeaves(); unsubAtt(); unsubReq(); };
             }, [firebaseUser]);
 
             function getToday() { return new Date().toLocaleDateString('en-CA'); }
@@ -172,7 +194,6 @@
                 }
             };
 
-            // KOMPONEN LOGO BERFUNGSI PENUH UNTUK HTML STANDALONE
             const BrandLogo = ({ size = "large" }) => (
                 <div className={`flex flex-col items-center justify-center ${size === 'large' ? 'mb-8' : 'mb-0 shrink-0'}`}>
                     <img 
@@ -180,10 +201,7 @@
                         alt="Muiz Banner Empire" 
                         style={{ height: size === 'large' ? '120px' : '42px', width: 'auto', maxWidth: '100%', objectFit: 'contain' }}
                         className={size === 'large' ? 'mb-3 drop-shadow-md' : 'bg-white rounded-lg p-1 shadow-sm'}
-                        onError={(e) => {
-                            e.target.onerror = null; 
-                            e.target.src = "https://placehold.co/100x100/2563eb/ffffff?text=MBE";
-                        }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100/2563eb/ffffff?text=MBE"; }}
                     />
                     {size === 'large' && (
                         <div className="text-center mt-3">
@@ -194,62 +212,34 @@
                 </div>
             );
 
-            // PAPARAN LOG MASUK
             if (!currentUser) {
                 return (
                     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
                         <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-gray-100">
-                            
                             <BrandLogo size="large" />
-                            
                             <form onSubmit={handleLogin} className="space-y-5">
-                                {loginError && (
-                                    <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm text-center font-medium border border-red-200">
-                                        {loginError}
-                                    </div>
-                                )}
-                                
+                                {loginError && <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm text-center font-medium border border-red-200">{loginError}</div>}
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">ID Pengguna</label>
-                                    <input 
-                                        type="text" 
-                                        value={usernameInput}
-                                        onChange={(e) => setUsernameInput(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-0 focus:border-blue-500 outline-none uppercase transition-colors"
-                                        required
-                                    />
+                                    <input type="text" value={usernameInput} onChange={(e) => setUsernameInput(e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-0 focus:border-blue-500 outline-none uppercase transition-colors" required />
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Kata Laluan</label>
-                                    <input 
-                                        type="password" 
-                                        value={passwordInput}
-                                        onChange={(e) => setPasswordInput(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-0 focus:border-blue-500 outline-none transition-colors"
-                                        required
-                                    />
+                                    <input type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-0 focus:border-blue-500 outline-none transition-colors" required />
                                 </div>
-
-                                <button 
-                                    type="submit" 
-                                    className={`w-full py-3.5 px-4 rounded-xl text-white font-bold transition-all shadow-lg flex items-center justify-center gap-2 mt-4 ${!isDbReady ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-95'}`}
-                                    disabled={!isDbReady}
-                                >
+                                <button type="submit" className={`w-full py-3.5 px-4 rounded-xl text-white font-bold transition-all shadow-lg flex items-center justify-center gap-2 mt-4 ${!isDbReady ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-95'}`} disabled={!isDbReady}>
                                     {isDbReady ? 'Log Masuk Sistem' : 'Menyambung...'}
                                 </button>
                             </form>
-                            {/* Teks bantuan telah dibuang seperti yang diminta */}
                         </div>
                     </div>
                 );
             }
 
-            // AHALA KE DASHBOARD ADMIN ATAU PEKERJA
             if (currentUser.role === 'admin') {
                 return <AdminDashboard 
                     currentUser={currentUser} setCurrentUser={setCurrentUser}
-                    leaves={leaves} attendances={attendances} users={users}
+                    leaves={leaves} attendances={attendances} specialRequests={specialRequests} users={users}
                     storeLocation={storeLocation} setStoreLocation={setStoreLocation}
                     bypassGps={bypassGps} setBypassGps={setBypassGps} BrandLogo={BrandLogo}
                 />;
@@ -257,7 +247,7 @@
 
             return <EmployeeDashboard 
                 currentUser={currentUser} setCurrentUser={setCurrentUser}
-                leaves={leaves} attendances={attendances}
+                leaves={leaves} attendances={attendances} specialRequests={specialRequests}
                 verifyLocationAndExecute={verifyLocationAndExecute}
                 modalMsg={modalMsg} setModalMsg={setModalMsg}
                 getToday={getToday} getCurrentTime={getCurrentTime} BrandLogo={BrandLogo}
@@ -267,34 +257,32 @@
         // ==========================================
         // PANEL ADMIN
         // ==========================================
-        function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, users, storeLocation, setStoreLocation, bypassGps, setBypassGps, BrandLogo }) {
+        function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, users, storeLocation, setStoreLocation, bypassGps, setBypassGps, BrandLogo }) {
             const [tab, setTab] = useState('kehadiran');
             const [deleteConfirmId, setDeleteConfirmId] = useState(null);
             const [deleteAttConfirmId, setDeleteAttConfirmId] = useState(null);
 
             const handleStatusCuti = async (id, status) => {
-                try { await db.collection('leaves').doc(id).update({ status }); } 
-                catch (e) { alert("Ralat kemaskini: " + e.message); }
+                try { await db.collection('leaves').doc(id).update({ status }); } catch (e) { alert("Ralat: " + e.message); }
             };
 
             const executeDeleteCuti = async (id) => {
-                try { await db.collection('leaves').doc(id).delete(); setDeleteConfirmId(null); } 
-                catch (e) { alert("Ralat padam: " + e.message); }
+                try { await db.collection('leaves').doc(id).delete(); setDeleteConfirmId(null); } catch (e) { alert("Ralat: " + e.message); }
+            };
+
+            const handleStatusRequest = async (id, status) => {
+                try { await db.collection('special_requests').doc(id).update({ status }); } catch (e) { alert("Ralat: " + e.message); }
+            };
+
+            const executeDeleteRequest = async (id) => {
+                try { await db.collection('special_requests').doc(id).delete(); setDeleteConfirmId(null); } catch (e) { alert("Ralat: " + e.message); }
             };
 
             const executeDeleteAttendance = async (id) => {
-                try { await db.collection('attendances').doc(id).delete(); setDeleteAttConfirmId(null); } 
-                catch (e) { alert("Ralat padam kehadiran: " + e.message); }
+                try { await db.collection('attendances').doc(id).delete(); setDeleteAttConfirmId(null); } catch (e) { alert("Ralat: " + e.message); }
             };
 
-            const setLocationToCurrent = () => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition((pos) => {
-                        setStoreLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                        alert("Lokasi kedai berjaya dikemaskini ke lokasi anda sekarang!");
-                    });
-                }
-            };
+            const pendingKebenaranCount = specialRequests.filter(r => r.status === 'Pending').length;
 
             return (
                 <div className="min-h-screen bg-gray-50 pb-20">
@@ -312,50 +300,19 @@
                     </div>
 
                     <div className="p-4 max-w-4xl mx-auto space-y-6">
-                        <div className="flex bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                            <button onClick={() => setTab('cuti')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'cuti' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Cuti</button>
-                            <button onClick={() => setTab('kehadiran')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'kehadiran' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Kehadiran</button>
-                            <button onClick={() => setTab('tetapan')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'tetapan' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Sistem</button>
+                        {/* TABS Horizontal Scroll */}
+                        <div className="flex bg-white rounded-xl shadow-sm overflow-x-auto hide-scroll border border-gray-100">
+                            <button onClick={() => setTab('kehadiran')} className={`flex-none px-6 py-3 text-sm font-bold transition-colors ${tab === 'kehadiran' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Kehadiran</button>
+                            <button onClick={() => setTab('kebenaran')} className={`flex-none px-6 py-3 text-sm font-bold transition-colors relative ${tab === 'kebenaran' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>
+                                Kebenaran Masa
+                                {pendingKebenaranCount > 0 && <span className="absolute top-2 right-2 flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span></span>}
+                            </button>
+                            <button onClick={() => setTab('cuti')} className={`flex-none px-6 py-3 text-sm font-bold transition-colors ${tab === 'cuti' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Cuti</button>
+                            <button onClick={() => setTab('umum')} className={`flex-none px-6 py-3 text-sm font-bold transition-colors ${tab === 'umum' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Cuti Umum</button>
+                            <button onClick={() => setTab('tetapan')} className={`flex-none px-6 py-3 text-sm font-bold transition-colors ${tab === 'tetapan' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Sistem</button>
                         </div>
 
-                        {tab === 'cuti' && (
-                            <div className="space-y-4">
-                                <h2 className="font-bold text-gray-700 flex items-center gap-2"><IconCalendar size={20}/> Permohonan Cuti</h2>
-                                {leaves.length === 0 ? <p className="text-gray-500 text-center py-8 bg-white rounded-xl border border-dashed">Tiada rekod cuti.</p> :
-                                [...leaves].reverse().map(leave => {
-                                    const user = users.find(u => u.id === leave.userId);
-                                    return (
-                                        <div key={leave.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <h3 className="font-bold text-gray-800 text-lg">{user?.name}</h3>
-                                                    <p className="text-sm text-gray-500">{leave.date} • <span className="font-bold text-blue-600">{leave.type}</span></p>
-                                                </div>
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${leave.status === 'Lulus' ? 'bg-green-100 text-green-700' : leave.status === 'Ditolak' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{leave.status}</span>
-                                            </div>
-                                            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100 mb-4"><span className="font-bold">Sebab:</span> {leave.reason}</p>
-                                            <div className="flex gap-2 border-t border-gray-100 pt-4">
-                                                {leave.status === 'Pending' && (
-                                                    <>
-                                                        <button onClick={() => handleStatusCuti(leave.id, 'Lulus')} className="flex-1 bg-green-50 text-green-600 py-2.5 rounded-xl text-sm font-bold hover:bg-green-100 flex justify-center items-center gap-2"><IconCheckCircle size={18}/> Lulus</button>
-                                                        <button onClick={() => handleStatusCuti(leave.id, 'Ditolak')} className="flex-1 bg-red-50 text-red-600 py-2.5 rounded-xl text-sm font-bold hover:bg-red-100 flex justify-center items-center gap-2"><IconXCircle size={18}/> Tolak</button>
-                                                    </>
-                                                )}
-                                                {deleteConfirmId === leave.id ? (
-                                                    <div className="flex-1 flex gap-2">
-                                                        <button onClick={() => executeDeleteCuti(leave.id)} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-red-700">Pasti Padam?</button>
-                                                        <button onClick={() => setDeleteConfirmId(null)} className="flex-1 bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-300">Batal</button>
-                                                    </div>
-                                                ) : (
-                                                    <button onClick={() => setDeleteConfirmId(leave.id)} className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 flex justify-center items-center gap-2"><IconTrash2 size={18}/> Padam</button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
-
+                        {/* TAB: KEHADIRAN */}
                         {tab === 'kehadiran' && (
                             <div className="space-y-4">
                                 <h2 className="font-bold text-gray-700 flex items-center gap-2"><IconClock size={20}/> Rekod Kehadiran</h2>
@@ -392,6 +349,105 @@
                             </div>
                         )}
 
+                        {/* TAB: KEBENARAN MASA */}
+                        {tab === 'kebenaran' && (
+                            <div className="space-y-4">
+                                <h2 className="font-bold text-gray-700 flex items-center gap-2"><IconBell size={20}/> Kelulusan Masuk Lambat / Keluar Awal</h2>
+                                {specialRequests.length === 0 ? <p className="text-gray-500 text-center py-8 bg-white rounded-xl border border-dashed">Tiada rekod permohonan masa.</p> :
+                                [...specialRequests].reverse().map(req => {
+                                    const user = users.find(u => u.id === req.userId);
+                                    return (
+                                        <div key={req.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div>
+                                                    <h3 className="font-bold text-gray-800 text-lg">{user?.name}</h3>
+                                                    <p className="text-sm text-gray-500">{req.date} • <span className={`font-bold ${req.type==='Masuk Lambat' ? 'text-orange-600' : 'text-blue-600'}`}>{req.type}</span></p>
+                                                </div>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${req.status === 'Lulus' ? 'bg-green-100 text-green-700' : req.status === 'Ditolak' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{req.status}</span>
+                                            </div>
+                                            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100 mb-4"><span className="font-bold">Sebab:</span> {req.reason}</p>
+                                            <div className="flex gap-2 border-t border-gray-100 pt-4">
+                                                {req.status === 'Pending' && (
+                                                    <>
+                                                        <button onClick={() => handleStatusRequest(req.id, 'Lulus')} className="flex-1 bg-green-50 text-green-600 py-2.5 rounded-xl text-sm font-bold hover:bg-green-100 flex justify-center items-center gap-2"><IconCheckCircle size={18}/> Lulus</button>
+                                                        <button onClick={() => handleStatusRequest(req.id, 'Ditolak')} className="flex-1 bg-red-50 text-red-600 py-2.5 rounded-xl text-sm font-bold hover:bg-red-100 flex justify-center items-center gap-2"><IconXCircle size={18}/> Tolak</button>
+                                                    </>
+                                                )}
+                                                {deleteConfirmId === req.id ? (
+                                                    <div className="flex-1 flex gap-2">
+                                                        <button onClick={() => executeDeleteRequest(req.id)} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-red-700">Pasti Padam?</button>
+                                                        <button onClick={() => setDeleteConfirmId(null)} className="flex-1 bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-300">Batal</button>
+                                                    </div>
+                                                ) : (
+                                                    <button onClick={() => setDeleteConfirmId(req.id)} className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 flex justify-center items-center gap-2"><IconTrash2 size={18}/> Padam</button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+
+                        {/* TAB: CUTI */}
+                        {tab === 'cuti' && (
+                            <div className="space-y-4">
+                                <h2 className="font-bold text-gray-700 flex items-center gap-2"><IconCalendar size={20}/> Permohonan Cuti Staf</h2>
+                                {leaves.length === 0 ? <p className="text-gray-500 text-center py-8 bg-white rounded-xl border border-dashed">Tiada rekod cuti.</p> :
+                                [...leaves].reverse().map(leave => {
+                                    const user = users.find(u => u.id === leave.userId);
+                                    return (
+                                        <div key={leave.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div>
+                                                    <h3 className="font-bold text-gray-800 text-lg">{user?.name}</h3>
+                                                    <p className="text-sm text-gray-500">{leave.date} • <span className="font-bold text-blue-600">{leave.type}</span></p>
+                                                </div>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${leave.status === 'Lulus' ? 'bg-green-100 text-green-700' : leave.status === 'Ditolak' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>{leave.status}</span>
+                                            </div>
+                                            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100 mb-4"><span className="font-bold">Sebab:</span> {leave.reason}</p>
+                                            <div className="flex gap-2 border-t border-gray-100 pt-4">
+                                                {leave.status === 'Pending' && (
+                                                    <>
+                                                        <button onClick={() => handleStatusCuti(leave.id, 'Lulus')} className="flex-1 bg-green-50 text-green-600 py-2.5 rounded-xl text-sm font-bold hover:bg-green-100 flex justify-center items-center gap-2"><IconCheckCircle size={18}/> Lulus</button>
+                                                        <button onClick={() => handleStatusCuti(leave.id, 'Ditolak')} className="flex-1 bg-red-50 text-red-600 py-2.5 rounded-xl text-sm font-bold hover:bg-red-100 flex justify-center items-center gap-2"><IconXCircle size={18}/> Tolak</button>
+                                                    </>
+                                                )}
+                                                {deleteConfirmId === leave.id ? (
+                                                    <div className="flex-1 flex gap-2">
+                                                        <button onClick={() => executeDeleteCuti(leave.id)} className="flex-1 bg-red-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-red-700">Pasti Padam?</button>
+                                                        <button onClick={() => setDeleteConfirmId(null)} className="flex-1 bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-300">Batal</button>
+                                                    </div>
+                                                ) : (
+                                                    <button onClick={() => setDeleteConfirmId(leave.id)} className="flex-1 bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 flex justify-center items-center gap-2"><IconTrash2 size={18}/> Padam</button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+
+                        {/* TAB: CUTI UMUM */}
+                        {tab === 'umum' && (
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                                <h2 className="font-black text-gray-800 text-lg flex items-center gap-2 mb-4 border-b pb-4"><IconCalendar className="text-blue-600"/> Senarai Cuti Umum 2026</h2>
+                                <div className="space-y-3">
+                                    {publicHolidays2026.map(ph => (
+                                        <div key={ph.id} className="flex justify-between items-center p-3 hover:bg-blue-50 rounded-xl transition-colors border border-transparent hover:border-blue-100">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">{ph.id}</div>
+                                                <div>
+                                                    <p className="font-bold text-gray-800">{ph.event}</p>
+                                                    <p className="text-xs text-gray-500">{ph.dateStr}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB: TETAPAN */}
                         {tab === 'tetapan' && (
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
                                 <div>
@@ -401,7 +457,14 @@
                                         <div><span className="block text-xs text-blue-500 uppercase tracking-wider">Koordinat Kedai</span>Lat: {storeLocation.lat}<br/>Lng: {storeLocation.lng}</div>
                                         <IconMapPin size={32} className="text-blue-200" />
                                     </div>
-                                    <button onClick={setLocationToCurrent} className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-blue-700 active:scale-95 transition-all">Kemaskini Ke Lokasi GPS Saya</button>
+                                    <button onClick={() => {
+                                        if (navigator.geolocation) {
+                                            navigator.geolocation.getCurrentPosition((pos) => {
+                                                setStoreLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                                                alert("Lokasi kedai berjaya dikemaskini ke lokasi anda sekarang!");
+                                            });
+                                        }
+                                    }} className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-blue-700 active:scale-95 transition-all">Kemaskini Ke Lokasi GPS Saya</button>
                                 </div>
                                 <hr className="border-gray-100" />
                                 <div className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-200">
@@ -424,15 +487,85 @@
         // ==========================================
         // PORTAL PEKERJA
         // ==========================================
-        function EmployeeDashboard({ currentUser, setCurrentUser, leaves, attendances, verifyLocationAndExecute, modalMsg, setModalMsg, getToday, getCurrentTime, BrandLogo }) {
+        function EmployeeDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, verifyLocationAndExecute, modalMsg, setModalMsg, getToday, getCurrentTime, BrandLogo }) {
             const [tab, setTab] = useState('kehadiran');
             const [leaveType, setLeaveType] = useState('Cuti Bergaji');
             const [leaveDate, setLeaveDate] = useState(getToday());
             const [leaveReason, setLeaveReason] = useState('');
 
+            // State Modal untuk Mohon Masuk Lambat / Keluar Awal
+            const [reqModal, setReqModal] = useState({ show: false, type: '' });
+            const [reqReason, setReqReason] = useState('');
+
             const today = getToday();
             const isOnLeaveToday = leaves.some(l => l.userId === currentUser.id && l.date === today && l.status === 'Lulus');
             const todayRecord = attendances.find(a => a.userId === currentUser.id && a.date === today) || { clockIn: null, breakOut: null, breakIn: null, clockOut: null, otIn: null, otOut: null };
+
+            // Logik Penghalang Masa
+            const checkTimeRestriction = (action) => {
+                if (currentUser.role === 'admin') return true; // Admin Muizzuddin Bypass Limit Masa
+
+                const now = new Date();
+                const totalMins = now.getHours() * 60 + now.getMinutes();
+                
+                if (action === 'clockIn') {
+                    // Mesti sebelum 8:15 AM
+                    if (totalMins > (8 * 60 + 15)) {
+                        const reqStatus = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Masuk Lambat');
+                        if (!reqStatus) {
+                            setReqModal({ show: true, type: 'Masuk Lambat' });
+                            return false;
+                        } else if (reqStatus.status === 'Pending') {
+                            setModalMsg({ type: 'error', text: 'Permohonan Masuk Lambat anda sedang menunggu kelulusan Admin.' });
+                            return false;
+                        } else if (reqStatus.status === 'Ditolak') {
+                            setModalMsg({ type: 'error', text: 'Permohonan Masuk Lambat ditolak. Anda tidak dibenarkan Clock In.' });
+                            return false;
+                        } else if (reqStatus.status === 'Lulus') {
+                            return true; // Dibenarkan kerana dah Lulus
+                        }
+                    }
+                } else if (action === 'clockOut') {
+                    // Mesti selepas 5:00 PM (17:00)
+                    if (totalMins < (17 * 60)) {
+                        const reqStatus = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Keluar Awal');
+                        if (!reqStatus) {
+                            setReqModal({ show: true, type: 'Keluar Awal' });
+                            return false;
+                        } else if (reqStatus.status === 'Pending') {
+                            setModalMsg({ type: 'error', text: 'Permohonan Keluar Awal anda sedang menunggu kelulusan Admin.' });
+                            return false;
+                        } else if (reqStatus.status === 'Ditolak') {
+                            setModalMsg({ type: 'error', text: 'Permohonan Keluar Awal ditolak. Anda mesti tunggu jam 5 Petang.' });
+                            return false;
+                        } else if (reqStatus.status === 'Lulus') {
+                            return true;
+                        }
+                    }
+                }
+                return true;
+            };
+
+            const attemptAction = (field, actionName) => {
+                if (field === 'clockIn' || field === 'clockOut') {
+                    if (!checkTimeRestriction(field)) return;
+                }
+                verifyLocationAndExecute(actionName, () => recordTime(field));
+            };
+
+            const submitSpecialRequest = async (e) => {
+                e.preventDefault();
+                if (!reqReason) return alert("Sila nyatakan sebab permohonan.");
+                try {
+                    await db.collection('special_requests').add({ 
+                        userId: currentUser.id, type: reqModal.type, date: today, 
+                        reason: reqReason, status: 'Pending', timestamp: Date.now() 
+                    });
+                    setReqModal({ show: false, type: '' });
+                    setReqReason(''); 
+                    setModalMsg({ type: 'success', text: `Permohonan ${reqModal.type} berjaya dihantar ke Admin. Sila tunggu kelulusan.` });
+                } catch (error) { alert("Ralat: " + error.message); }
+            };
 
             const submitLeave = async (e) => {
                 e.preventDefault();
@@ -456,8 +589,6 @@
                 } catch (error) { setModalMsg({ type: 'error', text: 'Ralat: ' + error.message }); }
             };
 
-            const handleAction = (field, actionName) => verifyLocationAndExecute(actionName, () => recordTime(field));
-
             return (
                 <div className="min-h-screen bg-gray-50 pb-20 relative">
                     <div className="bg-green-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center">
@@ -473,6 +604,7 @@
                         </button>
                     </div>
 
+                    {/* Modal Peringatan/Info Biasa */}
                     {modalMsg && (
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                             <div className="bg-white rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl">
@@ -485,13 +617,41 @@
                         </div>
                     )}
 
+                    {/* Modal Permohonan Khas (Lambat/Awal) */}
+                    {reqModal.show && (
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+                                <div className="text-center mb-5">
+                                    <IconAlertTriangle className="mx-auto text-orange-500 mb-3" size={48} />
+                                    <h2 className="text-xl font-black text-gray-800">Had Masa Sistem</h2>
+                                    <p className="text-sm text-gray-600 mt-2">
+                                        {reqModal.type === 'Masuk Lambat' ? 'Sistem dikunci selepas 8:15 Pagi. Sila mohon kebenaran Masuk Lambat.' : 'Sistem dikunci sebelum 5:00 Petang. Sila mohon kebenaran Keluar Awal.'}
+                                    </p>
+                                </div>
+                                <form onSubmit={submitSpecialRequest} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Sebab {reqModal.type}</label>
+                                        <textarea value={reqReason} onChange={(e) => setReqReason(e.target.value)} placeholder="Berikan sebab ringkas..." className="w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-0 focus:border-orange-500 outline-none h-24 resize-none font-medium bg-gray-50" required></textarea>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button type="submit" className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-bold active:scale-95 shadow-md hover:bg-orange-600 transition-colors">Hantar Mohon</button>
+                                        <button type="button" onClick={() => setReqModal({show:false, type:''})} className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 transition-colors">Batal</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="p-4 max-w-md mx-auto space-y-6 mt-2">
-                        <div className="flex bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                            <button onClick={() => setTab('kehadiran')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'kehadiran' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Kedatangan</button>
-                            <button onClick={() => setTab('mohon_cuti')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'mohon_cuti' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Mohon Cuti</button>
-                            <button onClick={() => setTab('rekod_cuti')} className={`flex-1 py-3 text-sm font-bold transition-colors ${tab === 'rekod_cuti' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Sejarah</button>
+                        {/* Tabs Scrolling Horizontal untuk Pekerja */}
+                        <div className="flex bg-white rounded-xl shadow-sm overflow-x-auto hide-scroll border border-gray-100">
+                            <button onClick={() => setTab('kehadiran')} className={`flex-none px-5 py-3 text-sm font-bold transition-colors ${tab === 'kehadiran' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Kedatangan</button>
+                            <button onClick={() => setTab('mohon_cuti')} className={`flex-none px-5 py-3 text-sm font-bold transition-colors ${tab === 'mohon_cuti' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Mohon Cuti</button>
+                            <button onClick={() => setTab('rekod_cuti')} className={`flex-none px-5 py-3 text-sm font-bold transition-colors ${tab === 'rekod_cuti' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Sejarah</button>
+                            <button onClick={() => setTab('umum')} className={`flex-none px-5 py-3 text-sm font-bold transition-colors ${tab === 'umum' ? 'bg-green-50 text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:bg-gray-50'}`}>Cuti Umum</button>
                         </div>
 
+                        {/* TAB: KEHADIRAN */}
                         {tab === 'kehadiran' && (
                             <div className="space-y-5">
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center relative overflow-hidden">
@@ -509,16 +669,16 @@
                                 ) : (
                                     <div className="space-y-6">
                                         <div className="grid grid-cols-2 gap-4">
-                                            <button disabled={todayRecord.clockIn} onClick={() => handleAction('clockIn', 'Clock In')} className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${todayRecord.clockIn ? 'bg-gray-100 text-gray-400' : 'bg-green-500 text-white shadow-lg shadow-green-200 hover:bg-green-600 active:scale-95'}`}><IconClock size={32} /><span className="font-black tracking-wide">CLOCK IN</span>{todayRecord.clockIn && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.clockIn}</span>}</button>
-                                            <button disabled={!todayRecord.clockIn || todayRecord.clockOut} onClick={() => handleAction('clockOut', 'Clock Out')} className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${(!todayRecord.clockIn || todayRecord.clockOut) ? 'bg-gray-100 text-gray-400' : 'bg-red-500 text-white shadow-lg shadow-red-200 hover:bg-red-600 active:scale-95'}`}><IconLogOut size={32} /><span className="font-black tracking-wide">CLOCK OUT</span>{todayRecord.clockOut && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.clockOut}</span>}</button>
-                                            <button disabled={!todayRecord.clockIn || todayRecord.breakOut} onClick={() => handleAction('breakOut', 'Keluar Rehat')} className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${(!todayRecord.clockIn || todayRecord.breakOut) ? 'bg-gray-100 text-gray-400' : 'bg-yellow-500 text-white shadow-lg shadow-yellow-200 hover:bg-yellow-600 active:scale-95'}`}><IconPlay size={32} className="rotate-90"/><span className="font-bold">Keluar Rehat</span>{todayRecord.breakOut && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.breakOut}</span>}</button>
-                                            <button disabled={!todayRecord.breakOut || todayRecord.breakIn} onClick={() => handleAction('breakIn', 'Masuk Rehat')} className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${(!todayRecord.breakOut || todayRecord.breakIn) ? 'bg-gray-100 text-gray-400' : 'bg-blue-500 text-white shadow-lg shadow-blue-200 hover:bg-blue-600 active:scale-95'}`}><IconPlay size={32} className="-rotate-90"/><span className="font-bold">Masuk Rehat</span>{todayRecord.breakIn && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.breakIn}</span>}</button>
+                                            <button disabled={todayRecord.clockIn} onClick={() => attemptAction('clockIn', 'Clock In')} className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${todayRecord.clockIn ? 'bg-gray-100 text-gray-400' : 'bg-green-500 text-white shadow-lg shadow-green-200 hover:bg-green-600 active:scale-95'}`}><IconClock size={32} /><span className="font-black tracking-wide">CLOCK IN</span>{todayRecord.clockIn && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.clockIn}</span>}</button>
+                                            <button disabled={!todayRecord.clockIn || todayRecord.clockOut} onClick={() => attemptAction('clockOut', 'Clock Out')} className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${(!todayRecord.clockIn || todayRecord.clockOut) ? 'bg-gray-100 text-gray-400' : 'bg-red-500 text-white shadow-lg shadow-red-200 hover:bg-red-600 active:scale-95'}`}><IconLogOut size={32} /><span className="font-black tracking-wide">CLOCK OUT</span>{todayRecord.clockOut && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.clockOut}</span>}</button>
+                                            <button disabled={!todayRecord.clockIn || todayRecord.breakOut} onClick={() => attemptAction('breakOut', 'Keluar Rehat')} className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${(!todayRecord.clockIn || todayRecord.breakOut) ? 'bg-gray-100 text-gray-400' : 'bg-yellow-500 text-white shadow-lg shadow-yellow-200 hover:bg-yellow-600 active:scale-95'}`}><IconPlay size={32} className="rotate-90"/><span className="font-bold">Keluar Rehat</span>{todayRecord.breakOut && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.breakOut}</span>}</button>
+                                            <button disabled={!todayRecord.breakOut || todayRecord.breakIn} onClick={() => attemptAction('breakIn', 'Masuk Rehat')} className={`p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-all ${(!todayRecord.breakOut || todayRecord.breakIn) ? 'bg-gray-100 text-gray-400' : 'bg-blue-500 text-white shadow-lg shadow-blue-200 hover:bg-blue-600 active:scale-95'}`}><IconPlay size={32} className="-rotate-90"/><span className="font-bold">Masuk Rehat</span>{todayRecord.breakIn && <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded-md">{todayRecord.breakIn}</span>}</button>
                                         </div>
                                         <div className="bg-purple-50 p-4 rounded-2xl border border-purple-100">
                                             <h3 className="text-sm font-black text-purple-800 mb-3 flex items-center gap-2"><IconClock size={16}/> KERJA LEBIH MASA (OT)</h3>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <button disabled={todayRecord.otIn} onClick={() => handleAction('otIn', 'OT Masuk')} className={`p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${todayRecord.otIn ? 'bg-white text-gray-400 border border-gray-200' : 'bg-purple-600 text-white shadow-md hover:bg-purple-700 active:scale-95'}`}><span className="font-bold text-sm">OT Masuk</span>{todayRecord.otIn && <span className="text-xs">{todayRecord.otIn}</span>}</button>
-                                                <button disabled={!todayRecord.otIn || todayRecord.otOut} onClick={() => handleAction('otOut', 'OT Keluar')} className={`p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${(!todayRecord.otIn || todayRecord.otOut) ? 'bg-white text-gray-400 border border-gray-200' : 'bg-purple-800 text-white shadow-md hover:bg-purple-900 active:scale-95'}`}><span className="font-bold text-sm">OT Keluar</span>{todayRecord.otOut && <span className="text-xs">{todayRecord.otOut}</span>}</button>
+                                                <button disabled={todayRecord.otIn} onClick={() => attemptAction('otIn', 'OT Masuk')} className={`p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${todayRecord.otIn ? 'bg-white text-gray-400 border border-gray-200' : 'bg-purple-600 text-white shadow-md hover:bg-purple-700 active:scale-95'}`}><span className="font-bold text-sm">OT Masuk</span>{todayRecord.otIn && <span className="text-xs">{todayRecord.otIn}</span>}</button>
+                                                <button disabled={!todayRecord.otIn || todayRecord.otOut} onClick={() => attemptAction('otOut', 'OT Keluar')} className={`p-4 rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${(!todayRecord.otIn || todayRecord.otOut) ? 'bg-white text-gray-400 border border-gray-200' : 'bg-purple-800 text-white shadow-md hover:bg-purple-900 active:scale-95'}`}><span className="font-bold text-sm">OT Keluar</span>{todayRecord.otOut && <span className="text-xs">{todayRecord.otOut}</span>}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -526,6 +686,27 @@
                             </div>
                         )}
 
+                        {/* TAB: CUTI UMUM */}
+                        {tab === 'umum' && (
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                                <h2 className="font-black text-gray-800 text-lg flex items-center gap-2 mb-4 border-b pb-4"><IconCalendar className="text-green-600"/> Senarai Cuti Umum 2026</h2>
+                                <div className="space-y-3">
+                                    {publicHolidays2026.map(ph => (
+                                        <div key={ph.id} className="flex justify-between items-center p-3 hover:bg-green-50 rounded-xl transition-colors border border-transparent hover:border-green-100">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm shrink-0">{ph.id}</div>
+                                                <div>
+                                                    <p className="font-bold text-gray-800">{ph.event}</p>
+                                                    <p className="text-xs text-gray-500">{ph.dateStr}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB: MOHON CUTI */}
                         {tab === 'mohon_cuti' && (
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                 <h2 className="font-black text-gray-800 mb-5 text-xl">Borang Cuti</h2>
@@ -549,6 +730,7 @@
                             </div>
                         )}
 
+                        {/* TAB: SEJARAH CUTI */}
                         {tab === 'rekod_cuti' && (
                             <div className="space-y-4">
                                 <h2 className="font-bold text-gray-700 mb-2">Sejarah Cuti</h2>
@@ -572,7 +754,6 @@
             );
         }
 
-        // Render the App
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
