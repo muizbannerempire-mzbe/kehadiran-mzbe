@@ -184,7 +184,8 @@
                     setLoginError('Sistem sedang menyambung. Sila tunggu...');
                     return;
                 }
-                const user = users.find(u => u.id === usernameInput.trim().toUpperCase() && u.password === passwordInput);
+                // Ditambah .trim() pada passwordInput untuk elak ralat jarak (space) secara automatik di hujung kata laluan
+                const user = users.find(u => u.id === usernameInput.trim().toUpperCase() && u.password === passwordInput.trim());
                 if (user) {
                     setCurrentUser(user);
                     setUsernameInput('');
