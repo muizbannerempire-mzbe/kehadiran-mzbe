@@ -46,6 +46,7 @@
         const IconAlertTriangle = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
         const IconPlay = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>;
         const IconBell = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>;
+        const IconChartBar = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>;
 
         // ==========================================
         // DATA CUTI UMUM 2026
@@ -96,9 +97,10 @@
             
             const [leaves, setLeaves] = useState([]);
             const [attendances, setAttendances] = useState([]);
-            const [specialRequests, setSpecialRequests] = useState([]); // State baru untuk Mohon Lambat/Awal
+            const [specialRequests, setSpecialRequests] = useState([]); 
 
             const users = [
+                { id: 'ADMIN', password: 'tatlim82', name: 'SUPER ADMIN MBE', role: 'admin' },
                 { id: 'MZBEBOSS001', password: 'admin', name: 'MUIZZUDDIN BIN AB.LLAH', role: 'admin' },
                 { id: 'MZBE072022', password: 'MZBE072022', name: 'NUR MAISARAH BINTI AHMAD RIZAL', role: 'pekerja' },
                 { id: 'MZBE082022', password: 'MZBE082022', name: 'WAN ADIB ASHRAF BIN AB WAHAB', role: 'pekerja' },
@@ -133,7 +135,6 @@
                     setIsDbReady(true);
                 });
 
-                // Tarik data permohonan khas (Masuk Lambat/Keluar Awal)
                 const unsubReq = db.collection('special_requests').onSnapshot(snapshot => {
                     setSpecialRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
                 });
@@ -262,6 +263,10 @@
             const [deleteConfirmId, setDeleteConfirmId] = useState(null);
             const [deleteAttConfirmId, setDeleteAttConfirmId] = useState(null);
 
+            // State Analisa
+            const [analisaPeriod, setAnalisaPeriod] = useState('Bulan Ini');
+            const [analisaUser, setAnalisaUser] = useState('ALL');
+
             const handleStatusCuti = async (id, status) => {
                 try { await db.collection('leaves').doc(id).update({ status }); } catch (e) { alert("Ralat: " + e.message); }
             };
@@ -283,6 +288,39 @@
             };
 
             const pendingKebenaranCount = specialRequests.filter(r => r.status === 'Pending').length;
+            const pekerjaList = users.filter(u => u.role === 'pekerja');
+
+            // Logik Analisa Prestasi Pekerja
+            const getAnalisaData = (uid) => {
+                const isDateInPeriod = (dateStr) => {
+                    if (!dateStr) return false;
+                    const d = new Date(dateStr);
+                    const now = new Date();
+                    if (analisaPeriod === 'Minggu Ini') {
+                        const day = now.getDay() || 7;
+                        const monday = new Date(now);
+                        monday.setDate(monday.getDate() - day + 1);
+                        monday.setHours(0,0,0,0);
+                        return d >= monday && d <= now;
+                    }
+                    if (analisaPeriod === 'Bulan Ini') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    if (analisaPeriod === 'Tahun Ini') return d.getFullYear() === now.getFullYear();
+                    return true; // Semua Masa
+                };
+
+                const userAtt = attendances.filter(a => (uid === 'ALL' ? true : a.userId === uid) && a.clockIn && isDateInPeriod(a.date));
+                const userLeaves = leaves.filter(l => (uid === 'ALL' ? true : l.userId === uid) && l.status === 'Lulus' && isDateInPeriod(l.date));
+                const userReqs = specialRequests.filter(r => (uid === 'ALL' ? true : r.userId === uid) && r.status === 'Lulus' && isDateInPeriod(r.date));
+
+                return {
+                    hadir: userAtt.length,
+                    bergaji: userLeaves.filter(l => l.type === 'Cuti Bergaji').length,
+                    tanpaGaji: userLeaves.filter(l => l.type === 'Cuti Tanpa Gaji').length,
+                    sakit: userLeaves.filter(l => l.type === 'Cuti Sakit (MC)').length,
+                    lambat: userReqs.filter(r => r.type === 'Masuk Lambat').length
+                };
+            };
+            const summaryData = getAnalisaData(analisaUser);
 
             return (
                 <div className="min-h-screen bg-gray-50 pb-20">
@@ -299,10 +337,11 @@
                         </button>
                     </div>
 
-                    <div className="p-4 max-w-4xl mx-auto space-y-6">
+                    <div className="p-4 max-w-5xl mx-auto space-y-6">
                         {/* TABS Horizontal Scroll */}
                         <div className="flex bg-white rounded-xl shadow-sm overflow-x-auto hide-scroll border border-gray-100">
                             <button onClick={() => setTab('kehadiran')} className={`flex-none px-6 py-3 text-sm font-bold transition-colors ${tab === 'kehadiran' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Kehadiran</button>
+                            <button onClick={() => setTab('analisa')} className={`flex-none px-6 py-3 text-sm font-bold transition-colors ${tab === 'analisa' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>Analisa</button>
                             <button onClick={() => setTab('kebenaran')} className={`flex-none px-6 py-3 text-sm font-bold transition-colors relative ${tab === 'kebenaran' ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}>
                                 Kebenaran Masa
                                 {pendingKebenaranCount > 0 && <span className="absolute top-2 right-2 flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span></span>}
@@ -346,6 +385,70 @@
                                         </div>
                                     )
                                 })}
+                            </div>
+                        )}
+
+                        {/* TAB: ANALISA (BARU) */}
+                        {tab === 'analisa' && (
+                            <div className="space-y-4">
+                                <h2 className="font-bold text-gray-700 flex items-center gap-2"><IconChartBar size={20}/> Laporan & Analisa Prestasi</h2>
+                                
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <select value={analisaPeriod} onChange={(e) => setAnalisaPeriod(e.target.value)} className="flex-1 border-2 border-gray-200 rounded-xl p-3 focus:ring-0 focus:border-blue-500 outline-none text-sm font-bold bg-gray-50 text-gray-700">
+                                            <option>Minggu Ini</option>
+                                            <option>Bulan Ini</option>
+                                            <option>Tahun Ini</option>
+                                            <option>Semua Masa</option>
+                                        </select>
+                                        <select value={analisaUser} onChange={(e) => setAnalisaUser(e.target.value)} className="flex-[2] border-2 border-gray-200 rounded-xl p-3 focus:ring-0 focus:border-blue-500 outline-none text-sm font-bold bg-gray-50 text-gray-700">
+                                            <option value="ALL">Semua Pekerja (Keseluruhan)</option>
+                                            {pekerjaList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                        </select>
+                                    </div>
+
+                                    {/* Kad Rumusan */}
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center"><p className="text-[10px] md:text-xs font-bold text-blue-600 mb-1 uppercase tracking-wide">Kehadiran</p><p className="text-2xl md:text-3xl font-black text-blue-800">{summaryData.hadir}</p></div>
+                                        <div className="bg-green-50 p-4 rounded-xl border border-green-100 text-center"><p className="text-[10px] md:text-xs font-bold text-green-600 mb-1 uppercase tracking-wide">C. Bergaji</p><p className="text-2xl md:text-3xl font-black text-green-800">{summaryData.bergaji}</p></div>
+                                        <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 text-center"><p className="text-[10px] md:text-xs font-bold text-orange-600 mb-1 uppercase tracking-wide">C. Tanpa Gaji</p><p className="text-2xl md:text-3xl font-black text-orange-800">{summaryData.tanpaGaji}</p></div>
+                                        <div className="bg-red-50 p-4 rounded-xl border border-red-100 text-center"><p className="text-[10px] md:text-xs font-bold text-red-600 mb-1 uppercase tracking-wide">Sakit (MC)</p><p className="text-2xl md:text-3xl font-black text-red-800">{summaryData.sakit}</p></div>
+                                        <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 text-center col-span-2 md:col-span-1"><p className="text-[10px] md:text-xs font-bold text-purple-600 mb-1 uppercase tracking-wide">Masuk Lambat</p><p className="text-2xl md:text-3xl font-black text-purple-800">{summaryData.lambat}</p></div>
+                                    </div>
+
+                                    {/* Jadual Perincian Jika "Semua Pekerja" Dipilih */}
+                                    {analisaUser === 'ALL' && (
+                                        <div className="mt-6 overflow-x-auto border border-gray-100 rounded-xl">
+                                            <table className="w-full text-left border-collapse whitespace-nowrap">
+                                                <thead>
+                                                    <tr className="bg-gray-50 border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wide">
+                                                        <th className="p-4 font-bold rounded-tl-xl">Nama Pekerja</th>
+                                                        <th className="p-4 font-bold text-center">Hadir</th>
+                                                        <th className="p-4 font-bold text-center">C. Bergaji</th>
+                                                        <th className="p-4 font-bold text-center">C. T.Gaji</th>
+                                                        <th className="p-4 font-bold text-center">C. Sakit</th>
+                                                        <th className="p-4 font-bold text-center rounded-tr-xl">Lambat</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {pekerjaList.map(p => {
+                                                        const d = getAnalisaData(p.id);
+                                                        return (
+                                                            <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50/50 text-sm transition-colors">
+                                                                <td className="p-4 font-bold text-gray-800">{p.name}</td>
+                                                                <td className="p-4 text-center font-black text-blue-600 bg-blue-50/30">{d.hadir}</td>
+                                                                <td className="p-4 text-center font-bold text-green-600">{d.bergaji}</td>
+                                                                <td className="p-4 text-center font-bold text-orange-600">{d.tanpaGaji}</td>
+                                                                <td className="p-4 text-center font-bold text-red-600">{d.sakit}</td>
+                                                                <td className="p-4 text-center font-black text-purple-600 bg-purple-50/30">{d.lambat}</td>
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 
@@ -503,13 +606,12 @@
 
             // Logik Penghalang Masa
             const checkTimeRestriction = (action) => {
-                if (currentUser.role === 'admin') return true; // Admin Muizzuddin Bypass Limit Masa
+                if (currentUser.role === 'admin') return true; 
 
                 const now = new Date();
                 const totalMins = now.getHours() * 60 + now.getMinutes();
                 
                 if (action === 'clockIn') {
-                    // Mesti sebelum 8:15 AM
                     if (totalMins > (8 * 60 + 15)) {
                         const reqStatus = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Masuk Lambat');
                         if (!reqStatus) {
@@ -522,11 +624,10 @@
                             setModalMsg({ type: 'error', text: 'Permohonan Masuk Lambat ditolak. Anda tidak dibenarkan Clock In.' });
                             return false;
                         } else if (reqStatus.status === 'Lulus') {
-                            return true; // Dibenarkan kerana dah Lulus
+                            return true; 
                         }
                     }
                 } else if (action === 'clockOut') {
-                    // Mesti selepas 5:00 PM (17:00)
                     if (totalMins < (17 * 60)) {
                         const reqStatus = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Keluar Awal');
                         if (!reqStatus) {
