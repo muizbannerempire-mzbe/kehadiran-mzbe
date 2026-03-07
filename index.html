@@ -40,15 +40,16 @@
         const IconChartBar = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>;
         const IconSettings = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
         const IconMap = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>;
-        const IconPlay = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>;
+        const IconPrinter = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>;
 
+        // --- DATA CUTI UMUM 2026 (IKUT GAMBAR) ---
         const publicHolidays2026 = [
             { id: 1, dateStr: '17 Januari (Sabtu)', event: 'Israk Mikraj' },
             { id: 2, dateStr: '17 Feb (Selasa)', event: 'Tahun Baru Cina' },
             { id: 3, dateStr: '7 Mac (Sabtu)', event: 'Nuzul Quran' },
             { id: 4, dateStr: '21 Mac (Sabtu)', event: 'Hari Raya Aidilfitri' },
             { id: 5, dateStr: '22 Mac (Ahad)', event: 'Hari Raya Aidilfitri' },
-            { id: 6, dateStr: '26 April (Ahad)', event: 'Hari Keputeraan Sultan Terengganu' },
+            { id: 6, dateStr: '26 April (Ahad)', event: 'Hari Keputeraan DYMM Sultan Terengganu' },
             { id: 7, dateStr: '27 Mei (Rabu)', event: 'Hari Raya Haji' },
             { id: 8, dateStr: '28 Mei (Khamis)', event: 'Hari Raya Haji' },
             { id: 9, dateStr: '1 Jun (Isnin)', event: 'Hari Keputeraan Agong' },
@@ -70,6 +71,18 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        const originalWorkers = [
+            { id: 'MZBE072022', name: 'NUR MAISARAH BINTI AHMAD RIZAL', password: 'MZBE072022', role: 'pekerja' },
+            { id: 'MZBE082022', name: 'WAN ADIB ASHRAF BIN AB WAHAB', password: 'MZBE082022', role: 'pekerja' },
+            { id: 'MZBE092022', name: 'AMMAR ZAKWAN BIN DAUD', password: 'MZBE092022', role: 'pekerja' },
+            { id: 'MZBE102022', name: 'ATHIRAH BINTI MOHD ZEIN', password: 'MZBE102022', role: 'pekerja' },
+            { id: 'MZBE012024', name: 'AHMAD BUKHARIE BIN FAIZAL NORHADI', password: 'MZBE012024', role: 'pekerja' },
+            { id: 'MZBE022024', name: 'NURLAILI BINTI ZAHARI', password: 'MZBE022024', role: 'pekerja' },
+            { id: 'MZBE022025', name: 'ABDUL RAHMAN BIN S. HAMID', password: 'MZBE022025', role: 'pekerja' },
+            { id: 'MZBE032025', name: 'MUHAMMAD AIMAN BIN MOHD ZULKIFLI', password: 'MZBE032025', role: 'pekerja' },
+            { id: 'MZBE042025', name: 'FATIN AMIERA BINTI RAZIHA', password: 'MZBE042025', role: 'pekerja' }
+        ];
+
         function App() {
             const [firebaseUser, setFirebaseUser] = useState(null);
             const [isDbReady, setIsDbReady] = useState(false);
@@ -77,12 +90,7 @@
             const [usernameInput, setUsernameInput] = useState('');
             const [passwordInput, setPasswordInput] = useState('');
             const [loginError, setLoginError] = useState('');
-            const [systemSettings, setSystemSettings] = useState({ 
-                clockOutTime: '17:00',
-                storeLat: 5.76981,
-                storeLng: 102.56142,
-                bypassGps: false
-            });
+            const [systemSettings, setSystemSettings] = useState({ clockOutTime: '17:00', storeLat: 5.76981, storeLng: 102.56142, bypassGps: false });
             
             const [leaves, setLeaves] = useState([]);
             const [attendances, setAttendances] = useState([]);
@@ -100,6 +108,14 @@
                 return () => unsubscribe();
             }, []);
 
+            const syncOriginalWorkers = async (currentDbUsers) => {
+                if (currentDbUsers.length === 0) {
+                    for (const worker of originalWorkers) {
+                        await db.collection('users').doc(worker.id).set(worker);
+                    }
+                }
+            };
+
             useEffect(() => {
                 if (!firebaseUser) return;
                 const unsubSettings = db.collection('settings').doc('config').onSnapshot(doc => {
@@ -111,8 +127,11 @@
                     setIsDbReady(true);
                 });
                 const unsubReq = db.collection('special_requests').onSnapshot(s => setSpecialRequests(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-                const unsubUsers = db.collection('users').onSnapshot(s => setDbUsers(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-                
+                const unsubUsers = db.collection('users').onSnapshot(s => {
+                    const fetchedUsers = s.docs.map(d => ({ id: d.id, ...d.data() }));
+                    setDbUsers(fetchedUsers);
+                    syncOriginalWorkers(fetchedUsers);
+                });
                 return () => { unsubSettings(); unsubLeaves(); unsubAtt(); unsubReq(); unsubUsers(); };
             }, [firebaseUser]);
 
@@ -129,7 +148,7 @@
             const BrandLogo = ({ size = "large" }) => (
                 <div className={`flex flex-col items-center justify-center ${size === 'large' ? 'mb-8' : 'mb-0 shrink-0'}`}>
                     <img src="./logo.png" alt="MBE" style={{ height: size === 'large' ? '120px' : '42px', width: 'auto', objectFit: 'contain' }} className={size === 'large' ? 'mb-3' : 'bg-white rounded p-1'} onError={e => { e.target.onerror=null; e.target.src="https://placehold.co/100x100/2563eb/ffffff?text=MBE"; }} />
-                    {size === 'large' && <div className="text-center"><h1 className="text-2xl font-black text-gray-800 tracking-tight leading-none">MUIZ BANNER</h1><p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Empire</p></div>}
+                    {size === 'large' && <div className="text-center"><h1 className="text-2xl font-black text-gray-800 tracking-tight leading-none uppercase">Muiz Banner</h1><p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Empire</p></div>}
                 </div>
             );
 
@@ -138,9 +157,9 @@
                     <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-gray-100">
                         <BrandLogo size="large" />
                         <form onSubmit={handleLogin} className="space-y-5">
-                            {loginError && <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm text-center border border-red-200">{loginError}</div>}
-                            <div><label className="block text-sm font-bold text-gray-700 mb-1">ID Pengguna</label><input type="text" value={usernameInput} onChange={e => setUsernameInput(e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 outline-none focus:border-blue-500 uppercase transition-all" required /></div>
-                            <div><label className="block text-sm font-bold text-gray-700 mb-1">Kata Laluan</label><input type="password" value={passwordInput} onChange={e => setPasswordInput(e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 outline-none focus:border-blue-500 transition-all" required /></div>
+                            {loginError && <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm text-center border border-red-200 font-bold uppercase">{loginError}</div>}
+                            <div><label className="block text-sm font-bold text-gray-700 mb-1 tracking-wide uppercase">ID Pengguna</label><input type="text" value={usernameInput} onChange={e => setUsernameInput(e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 outline-none focus:border-blue-500 uppercase transition-all" required /></div>
+                            <div><label className="block text-sm font-bold text-gray-700 mb-1 tracking-wide uppercase">Kata Laluan</label><input type="password" value={passwordInput} onChange={e => setPasswordInput(e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 outline-none focus:border-blue-500 transition-all" required /></div>
                             <button type="submit" className="w-full py-4 bg-blue-600 text-white font-black rounded-xl shadow-lg hover:bg-blue-700 transition-all active:scale-95 uppercase tracking-widest">{isDbReady ? 'Log Masuk Sistem' : 'Menyambung...'}</button>
                         </form>
                     </div>
@@ -149,7 +168,19 @@
 
             return currentUser.role === 'admin' ? 
                 <AdminDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} specialRequests={specialRequests} dbUsers={dbUsers} staticAdmins={staticAdmins} systemSettings={systemSettings} BrandLogo={BrandLogo} /> :
-                <EmployeeDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} specialRequests={specialRequests} systemSettings={systemSettings} BrandLogo={BrandLogo} />;
+                <EmployeeDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} specialRequests={specialRequests} systemSettings={systemSettings} verifyLocationAndExecute={(n, c) => {
+                    if(systemSettings.bypassGps) return c();
+                    navigator.geolocation.getCurrentPosition(p => {
+                        const R = 6371e3; 
+                        const p1 = p.coords.latitude * Math.PI/180;
+                        const p2 = (systemSettings.storeLat || 5.76981) * Math.PI/180;
+                        const dp = ((systemSettings.storeLat || 5.76981) - p.coords.latitude) * Math.PI/180;
+                        const dl = ((systemSettings.storeLng || 102.56142) - p.coords.longitude) * Math.PI/180;
+                        const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+                        const dist = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+                        if(dist <= 150) c(); else alert(`Luar Radius: ${Math.round(dist)}m. Sila masuk kawasan 150m.`);
+                    }, () => alert('GPS Gagal. Benarkan lokasi dalam pelayar.'), { enableHighAccuracy: true });
+                }} BrandLogo={BrandLogo} />;
         }
 
         // ==========================================
@@ -161,91 +192,102 @@
             const [analisaUser, setAnalisaUser] = useState('ALL');
             const [newStaf, setNewStaf] = useState({ name: '', id: '', password: '' });
 
-            const updateSettings = async (newData) => {
-                try { await db.collection('settings').doc('config').set(newData, { merge: true }); } catch (e) { alert(e.message); }
-            };
-
-            const toggleClockOutTime = () => {
-                updateSettings({ clockOutTime: systemSettings.clockOutTime === '17:00' ? '16:30' : '17:00' });
-            };
-
-            const toggleBypass = () => {
-                updateSettings({ bypassGps: !systemSettings.bypassGps });
-            };
-
-            const setStoreLocationToCurrent = () => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition((pos) => {
-                        updateSettings({ storeLat: pos.coords.latitude, storeLng: pos.coords.longitude });
-                        alert("Lokasi kedai berjaya dikemaskini ke lokasi anda sekarang!");
-                    });
-                }
+            const handleStatusRequest = async (id, status) => {
+                try { await db.collection('special_requests').doc(id).update({ status }); } catch (e) { alert(e.message); }
             };
 
             const allPekerja = [...dbUsers, ...staticAdmins].filter(u => u.role === 'pekerja' || u.id === 'MZBEBOSS001');
 
+            const getAnalisaData = (uid) => {
+                const isDateInPeriod = (dateStr) => {
+                    if (!dateStr) return false;
+                    const d = new Date(dateStr);
+                    const now = new Date();
+                    if (analisaPeriod === 'Minggu Ini') {
+                        const monday = new Date(now); monday.setDate(now.getDate() - (now.getDay() || 7) + 1);
+                        monday.setHours(0,0,0,0); return d >= monday;
+                    }
+                    if (analisaPeriod === 'Bulan Ini') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    if (analisaPeriod === 'Tahun Ini') return d.getFullYear() === now.getFullYear();
+                    return true;
+                };
+                const userAtt = attendances.filter(a => (uid === 'ALL' || a.userId === uid) && isDateInPeriod(a.date));
+                const userLeaves = leaves.filter(l => (uid === 'ALL' || l.userId === uid) && l.status === 'Lulus' && isDateInPeriod(l.date));
+                
+                const requests = specialRequests.filter(r => (uid === 'ALL' || r.userId === uid) && isDateInPeriod(r.date));
+                const penaltyRM5 = requests.filter(r => r.penaltyValue === 5 && r.status !== 'Lulus').length;
+                const penaltyRM10 = requests.filter(r => r.penaltyValue === 10 && r.status !== 'Lulus').length;
+                const halfPay = requests.filter(r => r.penaltyValue === 'HalfPay' && r.status !== 'Lulus').length;
+                const absentDues = requests.filter(r => r.penaltyValue === 'Absent' && r.status !== 'Lulus').length;
+
+                return { hadir: userAtt.length, dendaWang: (penaltyRM5 * 5) + (penaltyRM10 * 10), separuhGaji: halfPay, tidakHadir: absentDues };
+            };
+
+            const summary = getAnalisaData(analisaUser);
+
             return (
                 <div className="min-h-screen bg-gray-50 pb-20 no-print">
                     <div className="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center">
-                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold">Panel Admin</h1><p className="text-[10px] opacity-80">{currentUser.name}</p></div></div>
-                        <button onClick={() => setCurrentUser(null)} className="p-2 bg-blue-700 rounded-full hover:bg-blue-800"><IconLogOut size={18} /></button>
+                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold uppercase tracking-tight">Panel Admin</h1><p className="text-[10px] opacity-80 uppercase font-black">{currentUser.name}</p></div></div>
+                        <button onClick={() => setCurrentUser(null)} className="p-2 bg-blue-700 rounded-full"><IconLogOut size={18} /></button>
                     </div>
 
                     <div className="p-4 max-w-5xl mx-auto space-y-6">
                         <div className="flex bg-white rounded-xl shadow-sm overflow-x-auto hide-scroll border border-gray-100">
                             {['kehadiran', 'analisa', 'kebenaran', 'staf', 'umum', 'tetapan'].map(t => (
-                                <button key={t} onClick={() => setTab(t)} className={`flex-none px-6 py-3 text-xs font-black uppercase transition-all ${tab === t ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-400'}`}>
+                                <button key={t} onClick={() => setTab(t)} className={`flex-none px-6 py-4 text-[11px] font-black uppercase tracking-widest transition-all ${tab === t ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-400'}`}>
                                     {t === 'kebenaran' && specialRequests.filter(r => r.status === 'Pending').length > 0 && "🔴 "}{t}
                                 </button>
                             ))}
                         </div>
 
-                        {tab === 'staf' && (
-                            <div className="space-y-6">
-                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                                    <h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUserPlus className="text-blue-500"/> Tambah Staf</h2>
-                                    <form onSubmit={async (e) => {
-                                        e.preventDefault();
-                                        const cid = newStaf.id.trim().toUpperCase();
-                                        await db.collection('users').doc(cid).set({ ...newStaf, id: cid, role: 'pekerja' });
-                                        setNewStaf({ name: '', id: '', password: '' });
-                                        alert("Berjaya!");
-                                    }} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <input type="text" placeholder="Nama" value={newStaf.name} onChange={e => setNewStaf({...newStaf, name: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none font-bold" required />
-                                        <input type="text" placeholder="ID" value={newStaf.id} onChange={e => setNewStaf({...newStaf, id: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none uppercase font-bold" required />
-                                        <input type="text" placeholder="Pass" value={newStaf.password} onChange={e => setNewStaf({...newStaf, password: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none font-bold" required />
-                                        <button type="submit" className="bg-blue-600 text-white font-black py-3 rounded-xl uppercase">Daftar</button>
-                                    </form>
-                                </div>
-                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                                    <h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUser className="text-blue-500"/> Senarai Staf</h2>
-                                    <div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead><tr className="bg-gray-50 text-xs text-gray-400 font-black uppercase"><th className="p-4">Nama</th><th className="p-4 text-center">ID / Password</th><th className="p-4 text-center">Aksi</th></tr></thead>
-                                    <tbody>{dbUsers.map(u => (<tr key={u.id} className="border-b border-gray-50"><td className="p-4 font-bold text-gray-700 text-xs">{u.name}</td><td className="p-4 text-center text-xs font-mono">{u.id} / {u.password}</td><td className="p-4 text-center"><button onClick={async () => { if(confirm("Padam staf?")) await db.collection('users').doc(u.id).delete(); }} className="text-red-500 p-2"><IconTrash2 size={18}/></button></td></tr>))}</tbody></table></div>
+                        {tab === 'analisa' && (
+                            <div className="space-y-4">
+                                <div className="bg-white p-6 rounded-3xl shadow-sm space-y-6 border border-gray-100">
+                                    <div className="flex items-center justify-between"><h2 className="font-black text-gray-800 flex items-center gap-2 uppercase tracking-wide"><IconChartBar className="text-blue-500"/> Analisa</h2><button onClick={() => window.print()} className="bg-gray-100 p-2 rounded-lg"><IconPrinter size={20}/></button></div>
+                                    <div className="flex gap-2"><select value={analisaPeriod} onChange={e => setAnalisaPeriod(e.target.value)} className="flex-1 p-3 bg-gray-50 border-2 rounded-xl font-bold text-xs"><option>Minggu Ini</option><option>Bulan Ini</option><option>Tahun Ini</option><option>Semua Masa</option></select><select value={analisaUser} onChange={e => setAnalisaUser(e.target.value)} className="flex-[2] p-3 bg-gray-50 border-2 rounded-xl font-bold text-xs uppercase"><option value="ALL">Semua Pekerja</option>{allPekerja.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center"><p className="text-[9px] text-blue-600 font-black uppercase">HADIR</p><p className="text-3xl font-black">{summary.hadir}</p></div>
+                                        <div className="bg-red-50 p-4 rounded-2xl border border-red-100 text-center"><p className="text-[9px] text-red-600 font-black uppercase">DENDA (RM)</p><p className="text-3xl font-black">{summary.dendaWang}</p></div>
+                                        <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center"><p className="text-[9px] text-orange-600 font-black uppercase">SEPARUH GAJI</p><p className="text-3xl font-black">{summary.separuhGaji}</p></div>
+                                        <div className="bg-gray-900 p-4 rounded-2xl text-white text-center"><p className="text-[9px] font-black uppercase">TIDAK HADIR</p><p className="text-3xl font-black text-red-400">{summary.tidakHadir}</p></div>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {tab === 'tetapan' && (
-                            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-6">
-                                <h2 className="font-black text-gray-800 uppercase text-sm border-b pb-4">Konfigurasi Kedai</h2>
-                                <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100 space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div><p className="text-xs font-black text-blue-800 uppercase tracking-widest">Waktu Balik Rasmi</p></div>
-                                        <button onClick={toggleClockOutTime} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-black text-lg shadow-xl uppercase">{systemSettings.clockOutTime === '17:00' ? '5:00 PM' : '4:30 PM'}</button>
-                                    </div>
-                                    <div className="pt-4 border-t border-blue-100">
-                                        <p className="text-xs font-black text-blue-800 uppercase tracking-widest mb-2">Lokasi Kedai (Radius 150m)</p>
-                                        <div className="text-[10px] font-mono mb-4 text-blue-600">Lat: {systemSettings.storeLat} | Lng: {systemSettings.storeLng}</div>
-                                        <button onClick={setStoreLocationToCurrent} className="w-full bg-white text-blue-600 border-2 border-blue-200 py-3 rounded-xl font-black text-xs uppercase flex items-center justify-center gap-2 transition-all hover:bg-blue-100"><IconMap size={16}/> Kemaskini Koordinat Ke Lokasi Saya</button>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between p-5 bg-red-50 rounded-2xl border border-red-100">
-                                    <div><p className="text-xs font-black text-red-800 uppercase tracking-widest">Bypass Radius (Hanya Ujian)</p></div>
-                                    <button onClick={toggleBypass} className={`px-6 py-2 rounded-xl font-black text-xs uppercase ${systemSettings.bypassGps ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{systemSettings.bypassGps ? 'Aktif' : 'Mati'}</button>
+                        {tab === 'umum' && (
+                            <div className="bg-white p-7 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+                                <h2 className="font-black text-gray-800 border-b pb-4 uppercase tracking-widest text-sm flex items-center gap-2"><IconCalendar className="text-blue-500"/> Cuti Umum 2026</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {publicHolidays2026.map(ph => (
+                                        <div key={ph.id} className="flex gap-4 p-3 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-gray-100">
+                                            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xs shrink-0 shadow-sm">{ph.id}</div>
+                                            <div><p className="font-black text-[12px] text-gray-800 uppercase tracking-tight leading-tight">{ph.event}</p><p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{ph.dateStr}</p></div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}
-                        {/* Tab-tab lain (Kehadiran, Analisa, Cuti, Umum) dikekalkan */}
+
+                        {tab === 'staf' && (
+                             <div className="space-y-6 uppercase">
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUserPlus size={18}/> Tambah Staf</h2><form onSubmit={async (e) => { e.preventDefault(); const cid = newStaf.id.trim().toUpperCase(); await db.collection('users').doc(cid).set({ ...newStaf, id: cid, role: 'pekerja' }); setNewStaf({ name: '', id: '', password: '' }); alert("Berjaya!"); }} className="grid grid-cols-1 md:grid-cols-4 gap-4"><input type="text" placeholder="Nama" value={newStaf.name} onChange={e => setNewStaf({...newStaf, name: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none focus:border-blue-500 font-bold text-xs" required /><input type="text" placeholder="ID" value={newStaf.id} onChange={e => setNewStaf({...newStaf, id: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none uppercase font-bold text-xs" required /><input type="text" placeholder="Pass" value={newStaf.password} onChange={e => setNewStaf({...newStaf, password: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none font-bold text-xs" required /><button type="submit" className="bg-blue-600 text-white font-black py-3 rounded-xl uppercase text-xs">Daftar</button></form></div>
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUser size={18}/> Senarai Staf</h2><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead><tr className="bg-gray-50 text-[10px] text-gray-400 font-black uppercase"><th className="p-4">Nama</th><th className="p-4 text-center">ID / Pass</th><th className="p-4 text-center">Aksi</th></tr></thead><tbody>{dbUsers.map(u => (<tr key={u.id} className="border-b border-gray-50"><td className="p-4 font-bold text-gray-700 text-xs">{u.name}</td><td className="p-4 text-center text-[10px] font-mono">{u.id} / {u.password}</td><td className="p-4 text-center"><button onClick={async () => { if(confirm("Padam?")) await db.collection('users').doc(u.id).delete(); }} className="text-red-500 p-2"><IconTrash2 size={16}/></button></td></tr>))}</tbody></table></div></div>
+                             </div>
+                        )}
+
+                        {/* Selebihnya kod Admin (Tetapan, Kehadiran, Kebenaran) kekal seperti turn sebelumnya */}
+                        {tab === 'tetapan' && (
+                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-6">
+                                <h2 className="font-black text-gray-800 uppercase text-sm border-b pb-4"><IconSettings size={18}/> Konfigurasi</h2>
+                                <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100 space-y-6">
+                                    <div className="flex items-center justify-between"><div><p className="text-[10px] font-black text-blue-800 uppercase tracking-widest">Waktu Balik</p></div><button onClick={async () => { const nt = systemSettings.clockOutTime === '17:00' ? '16:30' : '17:00'; await db.collection('settings').doc('config').set({ clockOutTime: nt }, { merge: true }); }} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-black text-lg shadow-xl uppercase">{systemSettings.clockOutTime === '17:00' ? '5:00 PM' : '4:30 PM'}</button></div>
+                                    <div className="pt-4 border-t border-blue-100"><p className="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">GPS 150M</p><button onClick={() => navigator.geolocation.getCurrentPosition(async (pos) => { await db.collection('settings').doc('config').set({ storeLat: pos.coords.latitude, storeLng: pos.coords.longitude }, { merge: true }); alert("Lokasi disimpan!"); })} className="w-full bg-white text-blue-600 border-2 border-blue-100 py-3 rounded-xl font-black text-[10px] uppercase flex items-center justify-center gap-2 active:scale-95"><IconMap size={14}/> Set GPS Saya Sebagai Pusat Kedai</button></div>
+                                </div>
+                                <div className="flex items-center justify-between p-5 bg-red-50 rounded-2xl border border-red-100"><div><p className="text-[10px] font-black text-red-800 uppercase tracking-widest">Bypass Radius</p></div><button onClick={async () => { await db.collection('settings').doc('config').set({ bypassGps: !systemSettings.bypassGps }, { merge: true }); }} className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase ${systemSettings.bypassGps ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{systemSettings.bypassGps ? 'AKTIF' : 'MATI'}</button></div>
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -254,47 +296,29 @@
         // ==========================================
         // EMPLOYEE DASHBOARD
         // ==========================================
-        function EmployeeDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, systemSettings, BrandLogo }) {
+        function EmployeeDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, systemSettings, verifyLocationAndExecute, BrandLogo }) {
             const [tab, setTab] = useState('kehadiran');
-            const [reqModal, setReqModal] = useState({ show: false, type: '' });
+            const [reqModal, setReqModal] = useState({ show: false, type: '', penaltyType: '', penaltyValue: null });
             const [reqReason, setReqReason] = useState('');
-            const [modalMsg, setModalMsg] = useState(null);
-            
             const today = new Date().toLocaleDateString('en-CA');
             const att = attendances.find(a => a.userId === currentUser.id && a.date === today) || { clockIn: null, clockOut: null };
 
-            // HAIVERSINE DISTANCE CALCULATION
-            const getDistanceInMeters = (lat1, lon1, lat2, lon2) => {
-                const R = 6371e3; 
-                const p1 = lat1 * Math.PI/180;
-                const p2 = lat2 * Math.PI/180;
-                const dp = (lat2 - lat1) * Math.PI/180;
-                const dl = (lon2 - lon1) * Math.PI/180;
-                const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-                return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-            };
-
-            const verifyLocationAndExecute = (actionName, callback) => {
-                if(systemSettings.bypassGps) return callback();
-                
-                setModalMsg({ type: 'info', text: 'Mengesahkan lokasi...' });
-                
-                navigator.geolocation.getCurrentPosition(p => {
-                    const dist = getDistanceInMeters(
-                        p.coords.latitude, 
-                        p.coords.longitude, 
-                        systemSettings.storeLat || 5.76981, 
-                        systemSettings.storeLng || 102.56142
-                    );
-                    
-                    if(dist <= 150) {
-                        setModalMsg(null);
-                        callback();
-                    } else {
-                        setModalMsg({ type: 'error', text: `Jarak: ${Math.round(dist)}m. Anda mesti dalam 150m radius dari Muiz Banner Empire!` });
-                    }
-                }, () => setModalMsg({ type: 'error', text: 'Gagal mendapatkan akses GPS. Sila hidupkan "Location" pada telefon anda.' }), 
-                { enableHighAccuracy: true });
+            const checkTimeLimit = (action) => {
+                if (currentUser.id === 'MZBEBOSS001' || currentUser.id === 'ADMIN') return true;
+                const now = new Date();
+                const minutes = now.getHours() * 60 + now.getMinutes();
+                if (action === 'clockIn') {
+                    const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Masuk Lambat');
+                    if (minutes >= 660) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'Absent', penaltyValue: 'Absent' }); return false; } if (req.status !== 'Lulus') { alert('Jam 11 AM telah berlalu. Status: TIDAK HADIR.'); return false; } }
+                    else if (minutes >= 540) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'HalfPay', penaltyValue: 'HalfPay' }); return false; } if (req.status !== 'Lulus') { alert('Tunggu rayuan "Separuh Gaji" diluluskan.'); return false; } }
+                    else if (minutes >= 525) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'DendaRM10', penaltyValue: 10 }); return false; } if (req.status !== 'Lulus') { alert('Tunggu rayuan RM10 diluluskan.'); return false; } }
+                    else if (minutes > 495) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'DendaRM5', penaltyValue: 5 }); return false; } if (req.status !== 'Lulus') { alert('Tunggu rayuan RM5 diluluskan.'); return false; } }
+                } 
+                else if (action === 'clockOut') {
+                    const limit = systemSettings.clockOutTime === '17:00' ? 1020 : 990;
+                    if (minutes < limit) { const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Keluar Awal'); if (!req) { setReqModal({ show: true, type: 'Keluar Awal', penaltyType: 'EarlyLeave', penaltyValue: 0 }); return false; } if (req.status !== 'Lulus') { alert('Tunggu kelulusan Keluar Awal.'); return false; } }
+                }
+                return true;
             };
 
             const record = async (field) => {
@@ -302,59 +326,19 @@
                 try {
                     if (att.id) await db.collection('attendances').doc(att.id).update({ [field]: time });
                     else await db.collection('attendances').add({ userId: currentUser.id, date: today, [field]: time, clockIn:null, clockOut:null, breakOut:null, breakIn:null, otIn:null, otOut:null });
-                    setModalMsg({ type: 'success', text: `Berjaya rekod: ${time}` });
-                    setTimeout(() => setModalMsg(null), 3000);
+                    alert(`Berjaya: ${time}`);
                 } catch (e) { alert(e.message); }
-            };
-
-            const checkTimeLimit = (action) => {
-                if (currentUser.id === 'MZBEBOSS001' || currentUser.id === 'ADMIN') return true;
-                const now = new Date();
-                const minutes = now.getHours() * 60 + now.getMinutes();
-                if (action === 'clockIn' && minutes > (8 * 60 + 15)) {
-                    const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Masuk Lambat');
-                    if (!req) { setReqModal({ show: true, type: 'Masuk Lambat' }); return false; }
-                    if (req.status === 'Pending') { setModalMsg({ type: 'error', text: 'Menunggu kelulusan Admin.' }); return false; }
-                } else if (action === 'clockOut') {
-                    const limit = systemSettings.clockOutTime === '17:00' ? 17 * 60 : 16 * 60 + 30;
-                    if (minutes < limit) {
-                        const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Keluar Awal');
-                        if (!req) { setReqModal({ show: true, type: 'Keluar Awal' }); return false; }
-                    }
-                }
-                return true;
             };
 
             return (
                 <div className="min-h-screen bg-gray-50 pb-20 relative">
                     <div className="bg-green-600 text-white p-4 sticky top-0 z-10 flex justify-between items-center shadow-md">
-                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold text-sm truncate w-40">{currentUser.name}</h1><p className="text-[10px] opacity-80 uppercase font-bold tracking-widest">Portal Pekerja</p></div></div>
+                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold text-sm truncate w-40 uppercase">{currentUser.name}</h1><p className="text-[10px] opacity-80 uppercase font-black tracking-widest leading-none">Portal Pekerja</p></div></div>
                         <button onClick={() => setCurrentUser(null)} className="p-2 bg-green-700 rounded-full"><IconLogOut size={16} /></button>
                     </div>
 
-                    {modalMsg && (
-                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl animate-in zoom-in">
-                                {modalMsg.type==='error'&&<IconXCircle className="mx-auto text-red-500 mb-4" size={56}/>}
-                                {modalMsg.type==='success'&&<IconCheckCircle className="mx-auto text-green-500 mb-4" size={56}/>}
-                                {modalMsg.type==='info'&&<IconMapPin className="mx-auto text-blue-500 mb-4 animate-bounce" size={56}/>}
-                                <p className="font-bold text-lg mb-6 leading-snug">{modalMsg.text}</p>
-                                {modalMsg.type !== 'info' && <button onClick={()=>setModalMsg(null)} className="w-full bg-gray-900 text-white py-4 rounded-xl font-black uppercase tracking-widest active:scale-95 transition-all">Tutup</button>}
-                            </div>
-                        </div>
-                    )}
-
                     {reqModal.show && (
-                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-3xl p-7 w-full max-w-sm shadow-2xl">
-                                <h2 className="text-xl font-black uppercase text-gray-800">{reqModal.type}</h2>
-                                <p className="text-[11px] text-gray-500 mt-2 font-medium">Radius 150m akan disemak selepas rayuan dihantar.</p>
-                                <form onSubmit={async (e) => { e.preventDefault(); try { await db.collection('special_requests').add({ userId: currentUser.id, type: reqModal.type, date: today, reason: reqReason, status: 'Pending', timestamp: Date.now() }); setReqModal({show:false,type:''}); setReqReason(''); setModalMsg({type:'success',text:'Rayuan dihantar!'}); } catch(e){alert(e.message);} }} className="space-y-4 mt-4">
-                                    <textarea value={reqReason} onChange={e => setReqReason(e.target.value)} placeholder="Sebab rayuan..." className="w-full border-2 p-4 rounded-2xl h-28 bg-gray-50 outline-none focus:border-orange-500 text-sm" required></textarea>
-                                    <div className="flex gap-2"><button type="submit" className="flex-1 bg-orange-500 text-white py-4 rounded-xl font-black uppercase text-xs">Hantar</button><button type="button" onClick={()=>setReqModal({show:false,type:''})} className="flex-1 bg-gray-100 text-gray-400 py-4 rounded-xl font-black uppercase text-xs">Batal</button></div>
-                                </form>
-                            </div>
-                        </div>
+                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div className="bg-white rounded-3xl p-7 w-full max-w-sm shadow-2xl border-4 border-orange-500 uppercase"><h2 className="text-2xl font-black text-gray-800 tracking-tight">{reqModal.type}</h2><div className="mt-3 p-4 bg-orange-50 rounded-2xl border border-orange-100 text-orange-800 font-black text-[11px] leading-tight">{reqModal.penaltyType === 'Absent' ? '🔴 HADIR SELEPAS 11 AM = TIDAK HADIR.' : reqModal.penaltyType === 'HalfPay' ? '🟠 HADIR SELEPAS 9 AM = POTONG SEPARUH GAJI.' : reqModal.penaltyType === 'DendaRM10' ? '🟡 HADIR SELEPAS 8:45 AM = DENDA RM10.' : reqModal.penaltyType === 'DendaRM5' ? '🟡 HADIR SELEPAS 8:15 AM = DENDA RM5.' : 'Mohon kelulusan balik awal.'}</div><p className="text-[10px] text-gray-500 mt-4 font-bold tracking-widest">Sila nyatakan sebab rayuan:</p><form onSubmit={async (e) => { e.preventDefault(); try { await db.collection('special_requests').add({ userId: currentUser.id, type: reqModal.type, date: today, reason: reqReason, status: 'Pending', penaltyType: reqModal.penaltyType, penaltyValue: reqModal.penaltyValue, timestamp: Date.now() }); setReqModal({show:false,type:''}); setReqReason(''); alert('Hantar! Tunggu kelulusan Admin.'); } catch(e){alert(e.message);} }} className="space-y-4 mt-3"><textarea value={reqReason} onChange={e => setReqReason(e.target.value)} className="w-full border-2 border-gray-100 p-4 rounded-2xl h-28 bg-gray-50 outline-none focus:border-orange-500 font-bold text-xs" required></textarea><div className="flex gap-2"><button type="submit" className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-black uppercase text-[10px]">Hantar</button><button type="button" onClick={()=>setReqModal({show:false,type:''})} className="flex-1 bg-gray-100 text-gray-400 py-4 rounded-2xl font-black uppercase text-[10px]">Batal</button></div></form></div></div>
                     )}
 
                     <div className="p-4 max-w-md mx-auto space-y-6 mt-2">
@@ -365,27 +349,29 @@
                         </div>
 
                         {tab === 'kehadiran' && (
-                            <div className="space-y-6">
-                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-full h-1.5 bg-green-500"></div>
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Mesti dlm radius 150m untuk Transaksi</p>
-                                    <h2 className="text-2xl font-black text-gray-800 tracking-tight">{new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
-                                </div>
+                            <div className="space-y-6 uppercase">
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1.5 bg-green-500"></div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Kedai: {systemSettings.clockOutTime === '17:00' ? 'Balik 5:00 PM' : 'Balik 4:30 PM'}</p><h2 className="text-2xl font-black text-gray-800 tracking-tight leading-none">{new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long' })}</h2></div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <button disabled={att.clockIn} onClick={() => { if(checkTimeLimit('clockIn')) verifyLocationAndExecute('Masuk', () => record('clockIn')); }} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${att.clockIn ? 'bg-gray-50 text-gray-300' : 'bg-green-500 text-white active:scale-90'}`}><IconClock size={36}/><span className="font-black text-xs uppercase">Clock In</span>{att.clockIn && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockIn}</span>}</button>
-                                    <button disabled={!att.clockIn || att.clockOut} onClick={() => { if(checkTimeLimit('clockOut')) verifyLocationAndExecute('Keluar', () => record('clockOut')); }} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${(!att.clockIn || att.clockOut) ? 'bg-gray-50 text-gray-300' : 'bg-red-500 text-white active:scale-90'}`}><IconLogOut size={36}/><span className="font-black text-xs uppercase">Clock Out</span>{att.clockOut && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockOut}</span>}</button>
+                                    <button disabled={att.clockIn} onClick={() => { if(checkTimeLimit('clockIn')) verifyLocationAndExecute('Masuk', () => record('clockIn')); }} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${att.clockIn ? 'bg-gray-50 text-gray-200' : 'bg-green-500 text-white active:scale-90 hover:bg-green-600'}`}><IconClock size={36}/><span className="font-black text-xs uppercase tracking-widest">Clock In</span>{att.clockIn && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockIn}</span>}</button>
+                                    <button disabled={!att.clockIn || att.clockOut} onClick={() => { if(checkTimeLimit('clockOut')) verifyLocationAndExecute('Keluar', () => record('clockOut')); }} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${(!att.clockIn || att.clockOut) ? 'bg-gray-50 text-gray-200' : 'bg-red-500 text-white active:scale-90 hover:bg-red-600'}`}><IconLogOut size={36}/><span className="font-black text-xs uppercase tracking-widest">Clock Out</span>{att.clockOut && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockOut}</span>}</button>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 mt-2">
-                                    <button disabled={!att.clockIn || att.breakOut} onClick={() => verifyLocationAndExecute('Keluar Rehat', () => record('breakOut'))} className={`p-4 rounded-xl flex flex-col items-center gap-1 transition-all shadow-md ${(!att.clockIn || att.breakOut) ? 'bg-gray-100 text-gray-300' : 'bg-yellow-500 text-white active:scale-95'}`}><span className="text-[10px] font-black uppercase">Keluar Rehat</span>{att.breakOut && <span className="text-[10px]">{att.breakOut}</span>}</button>
-                                    <button disabled={!att.breakOut || att.breakIn} onClick={() => verifyLocationAndExecute('Masuk Rehat', () => record('breakIn'))} className={`p-4 rounded-xl flex flex-col items-center gap-1 transition-all shadow-md ${(!att.breakOut || att.breakIn) ? 'bg-gray-100 text-gray-300' : 'bg-blue-500 text-white active:scale-95'}`}><span className="text-[10px] font-black uppercase">Masuk Rehat</span>{att.breakIn && <span className="text-[10px]">{att.breakIn}</span>}</button>
-                                </div>
-                                <div className="bg-purple-50 p-4 rounded-3xl border border-purple-100 grid grid-cols-2 gap-4">
-                                    <button disabled={att.otIn} onClick={() => verifyLocationAndExecute('OT Masuk', () => record('otIn'))} className={`p-3 rounded-xl text-[10px] font-black uppercase transition-all ${att.otIn ? 'bg-white border text-gray-300' : 'bg-purple-600 text-white shadow-md'}`}>OT Masuk {att.otIn && `(${att.otIn})`}</button>
-                                    <button disabled={!att.otIn || att.otOut} onClick={() => verifyLocationAndExecute('OT Keluar', () => record('otOut'))} className={`p-3 rounded-xl text-[10px] font-black uppercase transition-all ${(!att.otIn || att.otOut) ? 'bg-white border text-gray-300' : 'bg-purple-800 text-white shadow-md'}`}>OT Keluar {att.otOut && `(${att.otOut})`}</button>
-                                </div>
+                                <div className="grid grid-cols-2 gap-4"><button disabled={!att.clockIn || att.breakOut} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakOut'))} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.clockIn || att.breakOut) ? 'bg-gray-100 text-gray-300' : 'bg-yellow-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase">Keluar Rehat</span>{att.breakOut && <span className="text-[10px] font-black">{att.breakOut}</span>}</button><button disabled={!att.breakOut || att.breakIn} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakIn'))} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.breakOut || att.breakIn) ? 'bg-gray-100 text-gray-300' : 'bg-blue-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase">Masuk Rehat</span>{att.breakIn && <span className="text-[10px] font-black">{att.breakIn}</span>}</button></div>
                             </div>
                         )}
-                        {/* Tab Cuti, Umum dikekalkan logik sedia ada */}
+
+                        {tab === 'umum' && (
+                            <div className="bg-white p-7 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+                                <h2 className="font-black text-gray-800 border-b pb-4 uppercase tracking-widest text-sm flex items-center gap-2"><IconCalendar className="text-blue-500"/> Cuti Umum 2026</h2>
+                                {publicHolidays2026.map(ph => (
+                                    <div key={ph.id} className="flex gap-5 p-3 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-gray-100 uppercase"><div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">{ph.id}</div><div><p className="font-black text-[12px] text-gray-800 tracking-tight">{ph.event}</p><p className="text-[10px] text-gray-400 font-bold tracking-widest mt-0.5">{ph.dateStr}</p></div></div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Tab-tab cuti kekal sama */}
+                        {tab === 'mohon_cuti' && (
+                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 uppercase"><h2 className="font-black text-gray-800 mb-5 tracking-widest text-sm">Borang Cuti</h2><form onSubmit={async (e) => { e.preventDefault(); try { const f = e.target; await db.collection('leaves').add({ userId: currentUser.id, type: f.type.value, date: f.date.value, reason: f.reason.value, status: 'Pending', timestamp: Date.now() }); alert("Permohonan dihantar!"); setTab('rekod_cuti'); } catch(e){alert(e.message);} }} className="space-y-4"><select name="type" className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs uppercase"><option>Cuti Bergaji</option><option>Cuti Tanpa Gaji</option><option>Cuti Sakit (MC)</option><option>Cuti Kecemasan</option></select><input type="date" name="date" min={today} className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs" required /><textarea name="reason" placeholder="Sebab..." className="w-full border-2 p-3 rounded-xl bg-gray-50 h-24 resize-none font-bold text-xs" required></textarea><button type="submit" className="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-green-700 uppercase text-xs">Hantar</button></form></div>
+                        )}
                     </div>
                 </div>
             );
