@@ -2,516 +2,648 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sistem Kehadiran MBE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjana Resit Wakaf Kg Baru Batu Tumbuh</title>
+    <!-- Taildwind CSS untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <!-- html2canvas untuk fungsi muat turun gambar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Font Awesome untuk ikon -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .bg-custom {
+            /* Latar belakang menggunakan gambar poster dengan lapisan gelap hijau */
+            background-image: linear-gradient(rgba(10, 40, 20, 0.8), rgba(10, 40, 20, 0.8)), url('image_450477.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
     </style>
 </head>
-<body class="bg-gray-100 antialiased">
-    <div id="root"></div>
+<body class="bg-custom min-h-screen p-4 flex items-center justify-center">
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+    <!-- TOAST NOTIFICATION (Sistem Mesej Timbul) -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 -translate-y-20 z-[100] transition-all duration-300 opacity-0 pointer-events-none w-[90%] max-w-md">
+        <div id="toastContent" class="bg-gray-800 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center text-sm font-medium border-l-4 border-blue-500">
+            <i id="toastIcon" class="fas fa-info-circle mr-3 text-lg"></i>
+            <span id="toastMsg" class="leading-tight">Mesej</span>
+        </div>
+    </div>
 
-        // --- ICONS ---
-        const IconUser = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-        const IconMapPin = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
-        const IconClock = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-        const IconCalendar = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
-        const IconCheckCircle = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
-        const IconXCircle = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>;
-        const IconTrash2 = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>;
-        const IconLogOut = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>;
-        const IconAlertTriangle = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
-        const IconPlay = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>;
-        const IconBell = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>;
-        const IconChartBar = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>;
-        const IconSettings = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+    <!-- MODAL ADMIN LOGIN -->
+    <div id="adminModal" class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-6 w-[90%] max-w-sm shadow-2xl transform scale-95 transition-transform duration-300" id="adminModalContent">
+            <div class="text-center mb-5">
+                <div class="inline-block bg-gray-100 p-3 rounded-full mb-2">
+                    <i class="fas fa-lock text-2xl text-gray-700"></i>
+                </div>
+                <h3 class="font-bold text-xl text-gray-800">Panel Admin</h3>
+                <p class="text-xs text-gray-500 mt-1">Sila masukkan kata laluan untuk akses.</p>
+            </div>
+            <input type="password" id="adminPassword" class="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 mb-5 bg-gray-50 text-center text-lg tracking-widest" placeholder="••••••••">
+            <p class="text-[10px] text-center text-gray-400 mb-4 -mt-2">Petunjuk: admin123</p>
+            <div class="flex space-x-3">
+                <button onclick="closeAdminLogin()" class="w-1/2 py-3 text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 font-semibold transition">Batal</button>
+                <button onclick="submitAdminLogin()" class="w-1/2 py-3 bg-green-700 text-white rounded-xl hover:bg-green-800 font-semibold shadow-md transition">Masuk</button>
+            </div>
+        </div>
+    </div>
 
-        const publicHolidays2026 = [
-            { id: 1, dateStr: '17 Januari (Sabtu)', event: 'Israk Mikraj' },
-            { id: 2, dateStr: '17 Feb (Selasa)', event: 'Tahun Baru Cina' },
-            { id: 3, dateStr: '7 Mac (Sabtu)', event: 'Nuzul Quran' },
-            { id: 4, dateStr: '21 Mac (Sabtu)', event: 'Hari Raya Aidilfitri' },
-            { id: 5, dateStr: '22 Mac (Ahad)', event: 'Hari Raya Aidilfitri' },
-            { id: 6, dateStr: '26 April (Ahad)', event: 'Hari Keputeraan Sultan Terengganu' },
-            { id: 7, dateStr: '27 Mei (Rabu)', event: 'Hari Raya Haji' },
-            { id: 8, dateStr: '28 Mei (Khamis)', event: 'Hari Raya Haji' },
-            { id: 9, dateStr: '1 Jun (Isnin)', event: 'Hari Keputeraan Agong' },
-            { id: 10, dateStr: '17 Jun (Rabu)', event: 'Awal Muharram' },
-            { id: 11, dateStr: '31 Ogos (Isnin)', event: 'Hari Kemerdekaan' },
-            { id: 12, dateStr: '16 September (Rabu)', event: 'Hari Malaysia' },
-        ];
+    <!-- MODAL PENGESAHAN PADAM (DELETE) -->
+    <div id="deleteModal" class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-6 w-[90%] max-w-sm shadow-2xl transform scale-95 transition-transform duration-300" id="deleteModalContent">
+            <div class="text-center mb-5">
+                <div class="inline-block bg-red-100 p-3 rounded-full mb-2">
+                    <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                </div>
+                <h3 class="font-bold text-xl text-gray-800">Padam Rekod?</h3>
+                <p class="text-sm text-gray-500 mt-2">Adakah anda pasti mahu memadam rekod sumbangan ini? Tindakan ini tidak boleh diundur.</p>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="closeDeleteModal()" class="w-1/2 py-3 text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 font-semibold transition">Batal</button>
+                <button onclick="executeDelete()" class="w-1/2 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 font-semibold shadow-md transition">Ya, Padam</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- BEKAS UTAMA APLIKASI -->
+    <div id="mainContainer" class="max-w-md w-full mx-auto transition-all duration-300 relative z-10">
+        
+        <!-- AMARAN MOD LUAR TALIAN -->
+        <div id="offlineWarningBanner" class="hidden mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 rounded shadow-md text-xs leading-relaxed">
+            <i class="fas fa-exclamation-triangle mr-1"></i> <strong>Mod Luar Talian Aktif:</strong> Pangkalan data belum dikonfigurasi sepenuhnya (Sila aktifkan <em>Anonymous Auth</em> di Firebase). Rekod hanya disimpan sementara.
+        </div>
+
+        <!-- SECTION BORANG (FORM) -->
+        <div id="formSection" class="bg-white rounded-2xl shadow-xl overflow-hidden border border-green-100">
+            <div class="bg-green-800 p-6 text-center">
+                <h1 class="text-lg font-bold text-yellow-400 leading-tight">Dana Pembelian Tanah Wakaf<br>dan Pengurusan Kubur</h1>
+                <p class="text-green-100 text-sm mt-2">Kampung Baru Batu Tumbuh</p>
+            </div>
+            
+            <div class="p-6">
+                <form id="receiptForm" onsubmit="generateReceipt(event)">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+                            <i class="fas fa-user mr-2 text-green-700"></i>Nama Penderma
+                        </label>
+                        <input type="text" id="name" required
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="Contoh: Ahmad bin Abu">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="phone">
+                            <i class="fas fa-phone mr-2 text-green-700"></i>No. Telefon Penderma
+                        </label>
+                        <input type="tel" id="phone" required
+                            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="Contoh: 0123456789">
+                        <p class="text-xs text-gray-500 mt-1">Nombor ini akan digunakan untuk hantar WhatsApp.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="amount">
+                            <i class="fas fa-money-bill-wave mr-2 text-green-700"></i>Jumlah Sumbangan (RM)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-gray-500 font-semibold">RM</span>
+                            <input type="number" id="amount" step="0.01" min="1" required
+                                class="w-full pl-10 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <button type="submit" 
+                        class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 flex justify-center items-center">
+                        <i class="fas fa-file-invoice mr-2"></i> Jana Resit
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SECTION RESIT (DIPAPARKAN SELEPAS JANA) -->
+        <div id="receiptSection" class="hidden">
+            <!-- Kawasan Resit untuk di-screenshot/download -->
+            <div id="receiptCard" class="bg-white rounded-lg shadow-2xl overflow-hidden border-2 border-green-800 relative">
+                <!-- Watermark Logo / Background Icon -->
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none">
+                    <i class="fas fa-mosque text-9xl"></i>
+                </div>
+
+                <!-- Header Resit -->
+                <div class="bg-green-800 text-center p-5 border-b-4 border-yellow-500">
+                    <h2 class="text-lg font-bold text-yellow-400 uppercase leading-tight">Dana Pembelian Tanah Wakaf<br>dan Pengurusan Kubur</h2>
+                    <h3 class="text-sm font-semibold text-white mt-2">Kampung Baru Batu Tumbuh</h3>
+                </div>
+
+                <!-- Body Resit -->
+                <div class="p-6 relative z-10">
+                    <div class="text-center mb-6">
+                        <span class="inline-block bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+                            Resit Rasmi
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-3">
+                        <span class="text-sm text-gray-500">No. Resit:</span>
+                        <span class="font-bold text-gray-800" id="displayRefNo">WKF-123456</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-3">
+                        <span class="text-sm text-gray-500">Tarikh & Masa:</span>
+                        <span class="font-bold text-gray-800 text-sm" id="displayDate">01/01/2024 10:00 AM</span>
+                    </div>
+
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-3">
+                        <span class="text-sm text-gray-500">Nama Penderma:</span>
+                        <span class="font-bold text-gray-800 text-right w-2/3" id="displayName">Ahmad bin Abu</span>
+                    </div>
+
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-6">
+                        <span class="text-sm text-gray-500">No. Telefon:</span>
+                        <span class="font-bold text-gray-800" id="displayPhone">0123456789</span>
+                    </div>
+
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <span class="block text-sm text-gray-600 mb-1">Jumlah Diterima</span>
+                        <span class="text-3xl font-bold text-green-800" id="displayAmount">RM 50.00</span>
+                    </div>
+
+                    <!-- Footer Resit -->
+                    <div class="mt-6 text-center">
+                        <p class="text-xs text-gray-500 italic">"Semoga Allah Membalas Jasa Baik Anda"</p>
+                        <p class="text-[10px] text-gray-400 mt-2">Resit ini dijana secara berkomputer. Tiada tandatangan diperlukan.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tindakan (Buttons) -->
+            <div class="mt-6 space-y-3">
+                <button onclick="sendWhatsApp()" class="w-full bg-[#25D366] hover:bg-[#1ebd5a] text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 flex justify-center items-center">
+                    <i class="fab fa-whatsapp text-xl mr-2"></i> Hantar ke WhatsApp Penderma
+                </button>
+
+                <div class="flex space-x-3">
+                    <button onclick="downloadImage()" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 flex justify-center items-center text-sm">
+                        <i class="fas fa-download mr-2"></i> Muat Turun Gambar
+                    </button>
+                    <button onclick="resetForm()" class="w-1/2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 flex justify-center items-center text-sm">
+                        <i class="fas fa-plus-circle mr-2"></i> Resit Baru
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER / CREDIT -->
+        <div class="mt-8 text-center text-xs text-white opacity-90 tracking-wide font-medium drop-shadow-md">
+            Powered by <br>
+            <span class="font-bold text-yellow-400 text-sm">Muiz Banner Empire</span>
+            
+            <div class="mt-4">
+                <button onclick="openAdminLogin()" class="text-white/60 hover:text-white hover:underline transition text-[11px]"><i class="fas fa-lock mr-1"></i> Panel Admin</button>
+            </div>
+        </div>
+
+        <!-- SECTION ADMIN (DIPAPARKAN BILA KLIK PANEL ADMIN) -->
+        <div id="adminSection" class="hidden bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mt-4 relative z-10">
+            <div class="bg-gray-800 p-5 flex justify-between items-center">
+                <h1 class="text-lg font-bold text-white"><i class="fas fa-user-shield text-yellow-400 mr-2"></i>Rekod Sumbangan</h1>
+                <button onclick="closeAdmin()" class="text-gray-400 hover:text-white transition"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div class="p-6 overflow-x-auto">
+                <div class="flex flex-col md:flex-row justify-between md:items-end mb-4 bg-gray-50 p-4 rounded-lg border gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Jumlah Kutipan Terkumpul</p>
+                        <p class="text-3xl font-bold text-green-700" id="adminTotalAmount">RM 0.00</p>
+                    </div>
+                    <div class="md:text-right">
+                        <p class="text-sm text-gray-500 mb-1">Jumlah Transaksi</p>
+                        <p class="text-xl font-bold text-gray-800" id="adminTotalCount">0</p>
+                    </div>
+                </div>
+                
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-5" id="offlineAdminWarning" style="display: none;">
+                    <p class="text-xs text-yellow-800 leading-relaxed">
+                        <i class="fas fa-exclamation-triangle mr-1"></i><strong>Mod Luar Talian:</strong> Firebase Auth belum diaktifkan. Data ini hanya disimpan sementara dan akan hilang jika anda memuat semula (<em>refresh</em>) halaman ini.
+                    </p>
+                </div>
+
+                <div class="min-w-[600px]"> <!-- Untuk scroll di telefon bimbit -->
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-green-100 text-green-800 border-b-2 border-green-200">
+                                <th class="p-3 rounded-tl-lg">No. Resit</th>
+                                <th class="p-3">Tarikh</th>
+                                <th class="p-3">Nama</th>
+                                <th class="p-3">No. Telefon</th>
+                                <th class="p-3 text-right">Jumlah (RM)</th>
+                                <th class="p-3 text-center rounded-tr-lg">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <!-- Data dijana di sini secara dinamik -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyDataMsg" class="text-center py-10 text-gray-400 hidden">
+                    <i class="fas fa-folder-open text-4xl mb-3 opacity-30"></i><br>
+                    Tiada rekod sumbangan dimasukkan setakat ini.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT UTAMA & FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Konfigurasi Firebase Anda
         const firebaseConfig = {
-            apiKey: "AIzaSyA20Va8z_pTNvo1d6v3T0GZSJz7nSMTTiU",
-            authDomain: "kehadiran-web.firebaseapp.com",
-            projectId: "kehadiran-web",
-            storageBucket: "kehadiran-web.firebasestorage.app",
-            messagingSenderId: "57438014766",
-            appId: "1:57438014766:web:63730481e6d649a9393ebf"
+            apiKey: "AIzaSyDnfe1OK_P5oG0aUqz0n8BqtgYo4ALfK-8",
+            authDomain: "dana-tanah-kubur.firebaseapp.com",
+            projectId: "dana-tanah-kubur",
+            storageBucket: "dana-tanah-kubur.firebasestorage.app",
+            messagingSenderId: "993200619810",
+            appId: "1:993200619810:web:27a570326d8a21fad6e57b"
         };
 
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const customAppId = "dana-tanah-kubur";
 
-        function App() {
-            const [firebaseUser, setFirebaseUser] = useState(null);
-            const [isDbReady, setIsDbReady] = useState(false);
-            const [currentUser, setCurrentUser] = useState(null);
-            const [usernameInput, setUsernameInput] = useState('');
-            const [passwordInput, setPasswordInput] = useState('');
-            const [loginError, setLoginError] = useState('');
-            const [systemSettings, setSystemSettings] = useState({ clockOutTime: '17:00' });
+        let currentUser = null;
+        let receiptsData = []; 
+        let isOfflineMode = false; // Fallback jika auth Firebase belum sedia
+        let recordToDeleteId = null; // Menyimpan ID rekod yang ingin dipadam
+
+        // --- SISTEM NOTIFIKASI (TOAST) ---
+        window.showToast = function(message, type = "info") {
+            const toast = document.getElementById('toast');
+            const toastContent = document.getElementById('toastContent');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.textContent = message;
             
-            const [leaves, setLeaves] = useState([]);
-            const [attendances, setAttendances] = useState([]);
-            const [specialRequests, setSpecialRequests] = useState([]); 
+            if (type === "error") {
+                toastContent.className = "bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center text-sm font-medium border-l-4 border-red-800";
+                toastIcon.className = "fas fa-exclamation-triangle mr-3 text-lg";
+            } else if (type === "success") {
+                toastContent.className = "bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center text-sm font-medium border-l-4 border-green-800";
+                toastIcon.className = "fas fa-check-circle mr-3 text-lg";
+            } else if (type === "warning") {
+                toastContent.className = "bg-yellow-500 text-yellow-900 px-6 py-3 rounded-xl shadow-2xl flex items-center text-sm font-medium border-l-4 border-yellow-800";
+                toastIcon.className = "fas fa-exclamation-circle mr-3 text-lg";
+            } else {
+                toastContent.className = "bg-gray-800 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center text-sm font-medium border-l-4 border-gray-900";
+                toastIcon.className = "fas fa-info-circle mr-3 text-lg";
+            }
 
-            const users = [
-                { id: 'ADMIN', password: 'tatlim82', name: 'SUPER ADMIN MBE', role: 'admin' },
-                { id: 'MZBEBOSS001', password: 'admin', name: 'MUIZZUDDIN BIN AB.LLAH', role: 'admin' },
-                { id: 'MZBE072022', password: 'MZBE072022', name: 'NUR MAISARAH BINTI AHMAD RIZAL', role: 'pekerja' },
-                { id: 'MZBE082022', password: 'MZBE082022', name: 'WAN ADIB ASHRAF BIN AB WAHAB', role: 'pekerja' },
-                { id: 'MZBE092022', password: 'MZBE092022', name: 'AMMAR ZAKWAN BIN DAUD', role: 'pekerja' },
-                { id: 'MZBE102022', password: 'MZBE102022', name: 'ATHIRAH BINTI MOHD ZEIN', role: 'pekerja' },
-                { id: 'MZBE012024', password: 'MZBE012024', name: 'AHMAD BUKHARIE BIN FAIZAL NORHADI', role: 'pekerja' },
-                { id: 'MZBE022024', password: 'MZBE022024', name: 'NURLAILI BINTI ZAHARI', role: 'pekerja' },
-                { id: 'MZBE022025', password: 'MZBE022025', name: 'ABDUL RAHMAN BIN S. HAMID', role: 'pekerja' },
-                { id: 'MZBE032025', password: 'MZBE032025', name: 'MUHAMMAD AIMAN BIN MOHD ZULKIFLI', role: 'pekerja' },
-                { id: 'MZBE042025', password: 'MZBE042025', name: 'FATIN AMIERA BINTI RAZIHA', role: 'pekerja' }
-            ];
+            toast.classList.remove('-translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
 
-            const [storeLocation, setStoreLocation] = useState({ lat: 5.76981, lng: 102.56142 }); 
-            const [bypassGps, setBypassGps] = useState(false); 
-            const [modalMsg, setModalMsg] = useState(null);
-
-            useEffect(() => {
-                auth.signInAnonymously().catch(e => console.error(e));
-                const unsubscribe = auth.onAuthStateChanged(u => setFirebaseUser(u));
-                return () => unsubscribe();
-            }, []);
-
-            useEffect(() => {
-                if (!firebaseUser) return;
-                const unsubSettings = db.collection('settings').doc('config').onSnapshot(doc => {
-                    if(doc.exists) setSystemSettings(doc.data());
-                });
-                const unsubLeaves = db.collection('leaves').onSnapshot(s => setLeaves(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-                const unsubAtt = db.collection('attendances').onSnapshot(s => {
-                    setAttendances(s.docs.map(d => ({ id: d.id, ...d.data() })));
-                    setIsDbReady(true);
-                });
-                const unsubReq = db.collection('special_requests').onSnapshot(s => setSpecialRequests(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-                return () => { unsubSettings(); unsubLeaves(); unsubAtt(); unsubReq(); };
-            }, [firebaseUser]);
-
-            const handleLogin = (e) => {
-                e.preventDefault();
-                const user = users.find(u => u.id === usernameInput.trim().toUpperCase() && u.password === passwordInput.trim());
-                if (user) { setCurrentUser(user); setUsernameInput(''); setPasswordInput(''); setLoginError(''); }
-                else setLoginError('ID Pengguna atau Kata Laluan salah.');
-            };
-
-            const BrandLogo = ({ size = "large" }) => (
-                <div className={`flex flex-col items-center justify-center ${size === 'large' ? 'mb-8' : 'mb-0 shrink-0'}`}>
-                    <img src="./logo.png" alt="MBE" style={{ height: size === 'large' ? '120px' : '42px', width: 'auto', objectFit: 'contain' }} className={size === 'large' ? 'mb-3' : 'bg-white rounded p-1'} onError={e => { e.target.onerror=null; e.target.src="https://placehold.co/100x100/2563eb/ffffff?text=MBE"; }} />
-                    {size === 'large' && <div className="text-center"><h1 className="text-2xl font-black text-gray-800">MUIZ BANNER</h1><p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Empire</p></div>}
-                </div>
-            );
-
-            if (!currentUser) return (
-                <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-                    <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md">
-                        <BrandLogo size="large" />
-                        <form onSubmit={handleLogin} className="space-y-5">
-                            {loginError && <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm text-center border border-red-200">{loginError}</div>}
-                            <div><label className="block text-sm font-bold text-gray-700 mb-1">ID Pengguna</label><input type="text" value={usernameInput} onChange={e => setUsernameInput(e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 uppercase outline-none focus:border-blue-500" required /></div>
-                            <div><label className="block text-sm font-bold text-gray-700 mb-1">Kata Laluan</label><input type="password" value={passwordInput} onChange={e => setPasswordInput(e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 outline-none focus:border-blue-500" required /></div>
-                            <button type="submit" className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700">{isDbReady ? 'Log Masuk' : 'Menyambung...'}</button>
-                        </form>
-                    </div>
-                </div>
-            );
-
-            return currentUser.role === 'admin' ? 
-                <AdminDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} specialRequests={specialRequests} users={users} storeLocation={storeLocation} setStoreLocation={setStoreLocation} bypassGps={bypassGps} setBypassGps={setBypassGps} systemSettings={systemSettings} BrandLogo={BrandLogo} /> :
-                <EmployeeDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} specialRequests={specialRequests} systemSettings={systemSettings} verifyLocationAndExecute={(n, c) => {
-                    if(bypassGps) { c(); return; }
-                    setModalMsg({ type: 'info', text: 'Mengesahkan lokasi...' });
-                    navigator.geolocation.getCurrentPosition(p => {
-                        const d = getDistanceInMeters(p.coords.latitude, p.coords.longitude, storeLocation.lat, storeLocation.lng);
-                        if(d <= 150) { setModalMsg(null); c(); }
-                        else setModalMsg({ type: 'error', text: `Jarak: ${Math.round(d)}m. Radius 150m diperlukan.` });
-                    }, () => setModalMsg({ type: 'error', text: 'GPS Gagal.' }), { enableHighAccuracy: true });
-                }} modalMsg={modalMsg} setModalMsg={setModalMsg} getToday={() => new Date().toLocaleDateString('en-CA')} getCurrentTime={() => new Date().toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', hour12: true })} BrandLogo={BrandLogo} />;
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-20', 'opacity-0');
+            }, 5000); 
         }
 
-        // ==========================================
-        // ADMIN DASHBOARD
-        // ==========================================
-        function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, users, storeLocation, setStoreLocation, bypassGps, setBypassGps, systemSettings, BrandLogo }) {
-            const [tab, setTab] = useState('kehadiran');
-            const [analisaPeriod, setAnalisaPeriod] = useState('Bulan Ini');
-            const [analisaUser, setAnalisaUser] = useState('ALL');
-
-            const handleStatusRequest = async (id, status) => {
-                try { await db.collection('special_requests').doc(id).update({ status }); } catch (e) { alert(e.message); }
-            };
-
-            const toggleClockOutTime = async () => {
-                const newTime = systemSettings.clockOutTime === '17:00' ? '16:30' : '17:00';
-                try { await db.collection('settings').doc('config').set({ clockOutTime: newTime }); } catch (e) { alert(e.message); }
-            };
-
-            const pekerjaList = users.filter(u => u.role === 'pekerja');
-            
-            const getAnalisaData = (uid) => {
-                const isDateInPeriod = (dateStr) => {
-                    if (!dateStr) return false;
-                    const d = new Date(dateStr);
-                    const now = new Date();
-                    if (analisaPeriod === 'Minggu Ini') {
-                        const monday = new Date(now); monday.setDate(now.getDate() - (now.getDay() || 7) + 1);
-                        monday.setHours(0,0,0,0); return d >= monday;
-                    }
-                    if (analisaPeriod === 'Bulan Ini') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                    if (analisaPeriod === 'Tahun Ini') return d.getFullYear() === now.getFullYear();
-                    return true;
-                };
-
-                const userAtt = attendances.filter(a => (uid === 'ALL' || a.userId === uid) && isDateInPeriod(a.date));
-                const userLeaves = leaves.filter(l => (uid === 'ALL' || l.userId === uid) && l.status === 'Lulus' && isDateInPeriod(l.date));
-                const userReqs = specialRequests.filter(r => (uid === 'ALL' || r.userId === uid) && r.status === 'Lulus' && isDateInPeriod(r.date));
-                const penalties = specialRequests.filter(r => (uid === 'ALL' || r.userId === uid) && r.type === 'Masuk Lambat' && r.status !== 'Lulus' && isDateInPeriod(r.date));
-
-                return {
-                    hadir: userAtt.length,
-                    bergaji: userLeaves.filter(l => l.type === 'Cuti Bergaji').length,
-                    tanpaGaji: userLeaves.filter(l => l.type === 'Cuti Tanpa Gaji').length,
-                    sakit: userLeaves.filter(l => l.type === 'Cuti Sakit (MC)').length,
-                    lambat: userReqs.filter(r => r.type === 'Masuk Lambat').length,
-                    denda: penalties.length * 5
-                };
-            };
-
-            const summary = getAnalisaData(analisaUser);
-
-            return (
-                <div className="min-h-screen bg-gray-50 pb-20">
-                    <div className="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center">
-                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold">Panel Admin</h1><p className="text-[10px] opacity-80">{currentUser.name}</p></div></div>
-                        <button onClick={() => setCurrentUser(null)} className="p-2 bg-blue-700 rounded-full"><IconLogOut size={18} /></button>
-                    </div>
-
-                    <div className="p-4 max-w-5xl mx-auto space-y-6">
-                        <div className="flex bg-white rounded-xl shadow-sm overflow-x-auto hide-scroll border border-gray-100">
-                            {['kehadiran', 'analisa', 'kebenaran', 'cuti', 'umum', 'tetapan'].map(t => (
-                                <button key={t} onClick={() => setTab(t)} className={`flex-none px-6 py-3 text-sm font-bold transition-all ${tab === t ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 uppercase'}`}>
-                                    {t === 'kebenaran' && specialRequests.filter(r => r.status === 'Pending').length > 0 && "🔴 "}{t}
-                                </button>
-                            ))}
-                        </div>
-
-                        {tab === 'kehadiran' && (
-                            <div className="space-y-4">
-                                {attendances.slice().reverse().map((att, i) => {
-                                    const user = users.find(u => u.id === att.userId);
-                                    return (
-                                        <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                                            <div className="flex justify-between border-b pb-2 mb-2 font-bold text-gray-700"><span>{user?.name}</span><span className="text-xs text-gray-400">{att.date}</span></div>
-                                            <div className="grid grid-cols-2 gap-2 text-xs">
-                                                <div>Masuk: <b>{att.clockIn || '-'}</b></div><div>Keluar: <b>{att.clockOut || '-'}</b></div>
-                                                <div>Rehat: <b>{att.breakOut || '-'} / {att.breakIn || '-'}</b></div>
-                                                <div className="text-purple-600 font-bold">OT: {att.otIn || '-'} / {att.otOut || '-'}</div>
-                                            </div>
-                                            <button onClick={async () => { if(confirm("Padam?")) await db.collection('attendances').doc(att.id).delete(); }} className="mt-3 w-full text-red-500 text-xs py-2 bg-red-50 rounded-lg flex items-center justify-center gap-2 font-bold"><IconTrash2 size={14}/> Padam Rekod</button>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
-
-                        {tab === 'analisa' && (
-                            <div className="space-y-4">
-                                <div className="bg-white p-5 rounded-2xl shadow-sm space-y-4">
-                                    <div className="flex gap-2">
-                                        <select value={analisaPeriod} onChange={e => setAnalisaPeriod(e.target.value)} className="flex-1 p-2 bg-gray-50 border rounded-lg font-bold text-sm">
-                                            <option>Minggu Ini</option><option>Bulan Ini</option><option>Tahun Ini</option><option>Semua Masa</option>
-                                        </select>
-                                        <select value={analisaUser} onChange={e => setAnalisaUser(e.target.value)} className="flex-[2] p-2 bg-gray-50 border rounded-lg font-bold text-sm">
-                                            <option value="ALL">Semua Pekerja</option>
-                                            {pekerjaList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <div className="bg-blue-50 p-3 rounded-xl text-center border border-blue-100"><p className="text-[10px] text-blue-600 font-bold">HADIR</p><p className="text-xl font-black">{summary.hadir}</p></div>
-                                        <div className="bg-green-50 p-3 rounded-xl text-center border border-green-100"><p className="text-[10px] text-green-600 font-bold">C.BERGAJI</p><p className="text-xl font-black">{summary.bergaji}</p></div>
-                                        <div className="bg-orange-50 p-3 rounded-xl text-center border border-orange-100"><p className="text-[10px] text-orange-600 font-bold">C.T.GAJI</p><p className="text-xl font-black">{summary.tanpaGaji}</p></div>
-                                        <div className="bg-red-50 p-3 rounded-xl text-center border border-red-100"><p className="text-[10px] text-red-600 font-bold">C.SAKIT</p><p className="text-xl font-black">{summary.sakit}</p></div>
-                                        <div className="bg-purple-50 p-3 rounded-xl text-center border border-purple-100"><p className="text-[10px] text-purple-600 font-bold">LAMBAT</p><p className="text-xl font-black">{summary.lambat}</p></div>
-                                        <div className="bg-gray-900 p-3 rounded-xl text-center text-white"><p className="text-[10px] font-bold">DENDA (RM)</p><p className="text-xl font-black">{summary.denda}</p></div>
-                                    </div>
-                                    {analisaUser === 'ALL' && (
-                                        <div className="overflow-x-auto rounded-lg border border-gray-100 mt-4">
-                                            <table className="w-full text-[10px] border-collapse">
-                                                <thead className="bg-gray-50 border-b"><tr><th className="p-2 text-left">Nama</th><th className="p-2">Hadir</th><th className="p-2">Denda</th></tr></thead>
-                                                <tbody>
-                                                    {pekerjaList.map(p => {
-                                                        const d = getAnalisaData(p.id);
-                                                        return <tr key={p.id} className="border-b">
-                                                            <td className="p-2 font-bold">{p.name}</td><td className="p-2 text-center">{d.hadir}</td><td className="p-2 text-center text-red-600 font-bold">RM{d.denda}</td>
-                                                        </tr>
-                                                    })}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {tab === 'kebenaran' && (
-                            <div className="space-y-4">
-                                {specialRequests.slice().reverse().map((req, i) => {
-                                    const u = users.find(x => x.id === req.userId);
-                                    return (
-                                        <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div><h3 className="font-bold text-gray-800">{u?.name}</h3><p className="text-xs text-gray-400">{req.date} • <span className="text-orange-600 font-bold">{req.type}</span></p></div>
-                                                <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${req.status==='Lulus'?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}`}>{req.status}</span>
-                                            </div>
-                                            <p className="text-sm bg-gray-50 p-3 rounded-xl italic mb-3">"{req.reason}"</p>
-                                            {req.type === 'Masuk Lambat' && <p className="text-[10px] text-red-500 font-bold mb-3 italic">Rayuan pembatalan denda RM5 disertakan.</p>}
-                                            {req.status === 'Pending' && (
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => handleStatusRequest(req.id, 'Lulus')} className="flex-1 bg-green-500 text-white font-bold py-2 rounded-xl text-xs hover:bg-green-600">Lulus (Batal Denda)</button>
-                                                    <button onClick={() => handleStatusRequest(req.id, 'Ditolak')} className="flex-1 bg-red-500 text-white font-bold py-2 rounded-xl text-xs hover:bg-red-600">Tolak</button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
-
-                        {tab === 'tetapan' && (
-                            <div className="space-y-4">
-                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
-                                    <div>
-                                        <h2 className="font-bold text-gray-800 flex items-center gap-2 mb-4"><IconSettings className="text-blue-600"/> Tetapan Waktu Bekerja</h2>
-                                        <div className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-100">
-                                            <div>
-                                                <p className="text-sm font-bold text-blue-800 tracking-wide uppercase">Waktu Balik (Clock Out)</p>
-                                                <p className="text-xs text-blue-600">Pekerja hanya boleh Clock Out selepas waktu ini.</p>
-                                            </div>
-                                            <button onClick={toggleClockOutTime} className="bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-lg shadow-lg">
-                                                {systemSettings.clockOutTime === '17:00' ? '5:00 PM' : '4:30 PM'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <hr />
-                                    <button onClick={() => setBypassGps(!bypassGps)} className={`w-full py-3 rounded-xl font-bold transition-all ${bypassGps ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
-                                        {bypassGps ? 'BYPASS GPS: AKTIF' : 'BYPASS GPS: MATI'}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                        {/* Other tabs like Cuti, Umum reuse from previous version */}
-                    </div>
-                </div>
-            );
-        }
-
-        // ==========================================
-        // EMPLOYEE DASHBOARD
-        // ==========================================
-        function EmployeeDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, systemSettings, verifyLocationAndExecute, modalMsg, setModalMsg, getToday, getCurrentTime, BrandLogo }) {
-            const [tab, setTab] = useState('kehadiran');
-            const [reqModal, setReqModal] = useState({ show: false, type: '' });
-            const [reqReason, setReqReason] = useState('');
-            const [leaveForm, setLeaveForm] = useState({ type: 'Cuti Bergaji', date: getToday(), reason: '' });
-
-            const today = getToday();
-            const att = attendances.find(a => a.userId === currentUser.id && a.date === today) || { clockIn: null, clockOut: null };
-            const isOnLeave = leaves.some(l => l.userId === currentUser.id && l.date === today && l.status === 'Lulus');
-
-            const checkTimeLimit = (action) => {
-                if (currentUser.role === 'admin') return true;
-                const now = new Date();
-                const minutes = now.getHours() * 60 + now.getMinutes();
+        // 1. Fungsi pengesahan (Auth Firebase)
+        async function initAuth() {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.warn("Ralat Auth Firebase dikesan. Beralih ke Mod Luar Talian.", error);
+                isOfflineMode = true;
+                document.getElementById('offlineWarningBanner').classList.remove('hidden');
+                document.getElementById('offlineAdminWarning').style.display = 'block';
                 
-                if (action === 'clockIn') {
-                    if (minutes > (8 * 60 + 15)) { // 8:15 AM
-                        const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Masuk Lambat');
-                        if (!req) { setReqModal({ show: true, type: 'Masuk Lambat' }); return false; }
-                        if (req.status === 'Pending') { setModalMsg({ type: 'error', text: 'Tunggu kelulusan Admin (Denda RM5 sedang diproses).' }); return false; }
-                        if (req.status === 'Ditolak') { setModalMsg({ type: 'error', text: 'Masuk Lambat ditolak. Hubungi Admin.' }); return false; }
-                    }
-                } else if (action === 'clockOut') {
-                    const limit = systemSettings.clockOutTime === '17:00' ? 17 * 60 : 16 * 60 + 30;
-                    if (minutes < limit) {
-                        const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Keluar Awal');
-                        if (!req) { setReqModal({ show: true, type: 'Keluar Awal' }); return false; }
-                        if (req.status === 'Pending') { setModalMsg({ type: 'error', text: 'Menunggu kelulusan Keluar Awal.' }); return false; }
-                        if (req.status === 'Ditolak') { setModalMsg({ type: 'error', text: 'Keluar Awal ditolak.' }); return false; }
-                    }
+                if (error.code === 'auth/configuration-not-found' || error.code === 'auth/operation-not-allowed') {
+                    window.showToast("Firebase: Sila aktifkan 'Anonymous' Sign-in provider di konsol Firebase anda.", "warning");
+                } else {
+                    window.showToast("Gagal menyambung ke pangkalan data. Beralih ke memori sementara.", "warning");
                 }
-                return true;
-            };
+            }
+        }
+        
+        initAuth();
 
-            const record = async (field) => {
-                const time = getCurrentTime();
-                try {
-                    if (att.id) await db.collection('attendances').doc(att.id).update({ [field]: time });
-                    else await db.collection('attendances').add({ userId: currentUser.id, date: today, [field]: time, clockIn:null, clockOut:null, breakOut:null, breakIn:null, otIn:null, otOut:null });
-                    setModalMsg({ type: 'success', text: `Rekod: ${time}` });
-                    setTimeout(() => setModalMsg(null), 3000);
-                } catch (e) { alert(e.message); }
-            };
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                isOfflineMode = false;
+                document.getElementById('offlineWarningBanner').classList.add('hidden');
+                document.getElementById('offlineAdminWarning').style.display = 'none';
+                setupRealtimeListener(); 
+            } else {
+                currentUser = null;
+            }
+        });
 
-            const submitRequest = async (e) => {
-                e.preventDefault();
-                try {
-                    await db.collection('special_requests').add({ 
-                        userId: currentUser.id, type: reqModal.type, date: today, 
-                        reason: reqReason, status: 'Pending', timestamp: Date.now() 
-                    });
-                    setReqModal({ show: false, type: '' }); setReqReason('');
-                    setModalMsg({ type: 'success', text: `Rayuan ${reqModal.type} dihantar ke Admin. Potongan RM5 akan dibatalkan jika lulus.` });
-                } catch (e) { alert(e.message); }
-            };
-
-            const submitLeave = async (e) => {
-                e.preventDefault();
-                try {
-                    await db.collection('leaves').add({ ...leaveForm, userId: currentUser.id, status: 'Pending', timestamp: Date.now() });
-                    setLeaveForm({...leaveForm, reason: ''}); alert("Dihantar!"); setTab('rekod_cuti');
-                } catch(e) { alert(e.message); }
-            };
-
-            return (
-                <div className="min-h-screen bg-gray-50 pb-20 relative">
-                    <div className="bg-green-600 text-white p-4 sticky top-0 z-10 flex justify-between items-center shadow-md">
-                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold text-sm leading-tight truncate w-40">{currentUser.name}</h1><p className="text-[10px]">Portal Pekerja</p></div></div>
-                        <button onClick={() => setCurrentUser(null)} className="p-2 bg-green-700 rounded-full"><IconLogOut size={16} /></button>
-                    </div>
-
-                    {modalMsg && (
-                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl">
-                                {modalMsg.type==='error'&&<IconAlertTriangle className="mx-auto text-red-500 mb-4" size={56}/>}
-                                {modalMsg.type==='success'&&<IconCheckCircle className="mx-auto text-green-500 mb-4" size={56}/>}
-                                {modalMsg.type==='info'&&<IconMapPin className="mx-auto text-blue-500 mb-4 animate-bounce" size={56}/>}
-                                <p className="font-bold text-lg mb-6">{modalMsg.text}</p>
-                                {modalMsg.type!=='info'&&<button onClick={()=>setModalMsg(null)} className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold">Tutup</button>}
-                            </div>
-                        </div>
-                    )}
-
-                    {reqModal.show && (
-                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
-                                <div className="text-center mb-5"><IconAlertTriangle className="mx-auto text-orange-500 mb-2" size={48}/><h2 className="text-xl font-black">{reqModal.type}</h2>
-                                <p className="text-xs text-gray-500 mt-2">
-                                    {reqModal.type === 'Masuk Lambat' ? 'Lewat selepas 8:15 AM dikenakan denda RM5. Sila buat rayuan jika ada urusan penting.' : `Waktu balik rasmi adalah ${systemSettings.clockOutTime === '17:00' ? '5:00 PM' : '4:30 PM'}. Sila mohon Keluar Awal.`}
-                                </p></div>
-                                <form onSubmit={submitRequest} className="space-y-4">
-                                    <textarea value={reqReason} onChange={e => setReqReason(e.target.value)} placeholder="Sebab rayuan..." className="w-full border-2 p-3 rounded-xl h-24 bg-gray-50 outline-none focus:border-orange-500" required></textarea>
-                                    <div className="flex gap-2"><button type="submit" className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-bold">Hantar Rayuan</button><button type="button" onClick={()=>setReqModal({show:false,type:''})} className="flex-1 bg-gray-200 py-3 rounded-xl font-bold">Batal</button></div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="p-4 max-w-md mx-auto space-y-6">
-                        <div className="flex bg-white rounded-xl shadow-sm overflow-x-auto hide-scroll border border-gray-100">
-                            {['kehadiran', 'mohon_cuti', 'rekod_cuti', 'umum'].map(t => (
-                                <button key={t} onClick={() => setTab(t)} className={`flex-none px-6 py-3 text-xs font-bold uppercase transition-all ${tab===t?'bg-green-50 text-green-600 border-b-2 border-green-600':'text-gray-400'}`}>{t.replace('_',' ')}</button>
-                            ))}
-                        </div>
-
-                        {tab === 'kehadiran' && (
-                            <div className="space-y-5">
-                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 text-center relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Waktu Balik Set : {systemSettings.clockOutTime === '17:00' ? '5:00 PM' : '4:30 PM'}</p>
-                                    <h2 className="text-xl font-black text-gray-800 mt-1">{new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
-                                </div>
-
-                                {isOnLeave ? (
-                                    <div className="bg-orange-50 border border-orange-200 p-8 rounded-3xl text-center shadow-sm">
-                                        <IconCalendar className="mx-auto text-orange-500 mb-4" size={56} /><h3 className="text-xl font-black text-orange-800">Anda Sedang Bercuti</h3>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-6">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <button disabled={att.clockIn} onClick={() => { if(checkTimeLimit('clockIn')) verifyLocationAndExecute('Masuk', () => record('clockIn')); }} className={`p-5 rounded-2xl flex flex-col items-center gap-2 transition-all shadow-md ${att.clockIn ? 'bg-gray-100 text-gray-400' : 'bg-green-500 text-white active:scale-95'}`}><IconClock size={32}/><span className="font-black text-xs">CLOCK IN</span>{att.clockIn && <span className="text-[10px] bg-white/20 px-1 rounded">{att.clockIn}</span>}</button>
-                                            <button disabled={!att.clockIn || att.clockOut} onClick={() => { if(checkTimeLimit('clockOut')) verifyLocationAndExecute('Keluar', () => record('clockOut')); }} className={`p-5 rounded-2xl flex flex-col items-center gap-2 transition-all shadow-md ${(!att.clockIn || att.clockOut) ? 'bg-gray-100 text-gray-400' : 'bg-red-500 text-white active:scale-95'}`}><IconLogOut size={32}/><span className="font-black text-xs">CLOCK OUT</span>{att.clockOut && <span className="text-[10px] bg-white/20 px-1 rounded">{att.clockOut}</span>}</button>
-                                            <button disabled={!att.clockIn || att.breakOut} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakOut'))} className={`p-4 rounded-xl flex flex-col items-center gap-2 transition-all ${(!att.clockIn || att.breakOut) ? 'bg-gray-100 text-gray-400' : 'bg-yellow-500 text-white shadow-md active:scale-95'}`}><IconPlay className="rotate-90"/><span className="text-[10px] font-bold uppercase">Keluar Rehat</span>{att.breakOut && <span className="text-[10px]">{att.breakOut}</span>}</button>
-                                            <button disabled={!att.breakOut || att.breakIn} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakIn'))} className={`p-4 rounded-xl flex flex-col items-center gap-2 transition-all ${(!att.breakOut || att.breakIn) ? 'bg-gray-100 text-gray-400' : 'bg-blue-500 text-white shadow-md active:scale-95'}`}><IconPlay className="-rotate-90"/><span className="text-[10px] font-bold uppercase">Masuk Rehat</span>{att.breakIn && <span className="text-[10px]">{att.breakIn}</span>}</button>
-                                        </div>
-                                        <div className="bg-purple-50 p-4 rounded-2xl border border-purple-100 grid grid-cols-2 gap-4">
-                                            <button disabled={att.otIn} onClick={() => verifyLocationAndExecute('OT', () => record('otIn'))} className={`p-3 rounded-xl text-xs font-bold transition-all ${att.otIn ? 'bg-white border text-gray-300' : 'bg-purple-600 text-white shadow-md'}`}>OT MASUK {att.otIn && `(${att.otIn})`}</button>
-                                            <button disabled={!att.otIn || att.otOut} onClick={() => verifyLocationAndExecute('OT', () => record('otOut'))} className={`p-3 rounded-xl text-xs font-bold transition-all ${(!att.otIn || att.otOut) ? 'bg-white border text-gray-300' : 'bg-purple-800 text-white shadow-md'}`}>OT KELUAR {att.otOut && `(${att.otOut})`}</button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {tab === 'mohon_cuti' && (
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <h2 className="font-black text-gray-800 mb-5">Borang Cuti</h2>
-                                <form onSubmit={submitLeave} className="space-y-4">
-                                    <select value={leaveForm.type} onChange={e => setLeaveForm({...leaveForm, type: e.target.value})} className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold outline-none focus:border-green-500"><option>Cuti Bergaji</option><option>Cuti Tanpa Gaji</option><option>Cuti Sakit (MC)</option><option>Cuti Kecemasan</option></select>
-                                    <input type="date" value={leaveForm.date} min={getToday()} onChange={e => setLeaveForm({...leaveForm, date: e.target.value})} className="w-full border-2 p-3 rounded-xl bg-gray-50 outline-none focus:border-green-500 font-bold" required />
-                                    <textarea value={leaveForm.reason} onChange={e => setLeaveForm({...leaveForm, reason: e.target.value})} placeholder="Sebab..." className="w-full border-2 p-3 rounded-xl bg-gray-50 h-24 resize-none outline-none focus:border-green-500" required></textarea>
-                                    <button type="submit" className="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-green-700">Hantar Mohon</button>
-                                </form>
-                            </div>
-                        )}
-
-                        {tab === 'rekod_cuti' && (
-                            <div className="space-y-4">
-                                {leaves.filter(l => l.userId === currentUser.id).slice().reverse().map((l, i) => (
-                                    <div key={i} className="bg-white p-4 rounded-2xl border shadow-sm">
-                                        <div className="flex justify-between items-start"><h3 className="font-black text-gray-800">{l.type}</h3><span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${l.status==='Lulus'?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}`}>{l.status}</span></div>
-                                        <p className="text-[10px] text-gray-400 mt-1">{l.date}</p><p className="text-xs bg-gray-50 p-2 rounded mt-2 italic">"{l.reason}"</p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {tab === 'umum' && (
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-                                <h2 className="font-black text-gray-800 border-b pb-3">Cuti Umum 2026</h2>
-                                {publicHolidays2026.map(ph => (
-                                    <div key={ph.id} className="flex gap-4 p-2 hover:bg-gray-50 rounded-lg">
-                                        <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-xs shrink-0">{ph.id}</div>
-                                        <div><p className="font-bold text-xs text-gray-800">{ph.event}</p><p className="text-[10px] text-gray-400">{ph.dateStr}</p></div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
+        // 2. Fungsi Tarik Data Terkini dari awan (Real-time listener)
+        function setupRealtimeListener() {
+            if (!currentUser || isOfflineMode) return;
+            
+            const colRef = collection(db, 'artifacts', customAppId, 'public', 'data', 'receipts');
+            
+            onSnapshot(colRef, (snapshot) => {
+                receiptsData = [];
+                snapshot.forEach(doc => {
+                    receiptsData.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Susun ikut tarikh paling baru
+                receiptsData.sort((a, b) => b.timestamp - a.timestamp);
+                
+                // Kemaskini jadual jika Admin sedang buka
+                const adminSection = document.getElementById('adminSection');
+                if (adminSection && !adminSection.classList.contains('hidden')) {
+                    window.renderAdminTable();
+                }
+            }, (error) => {
+                console.error("Ralat ambil data:", error);
+            });
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // --- Fungsi Asas Sistem ---
+        window.formatDate = function(date) {
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+            return date.toLocaleString('ms-MY', options);
+        }
+
+        window.generateRefNo = function() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const random = Math.floor(1000 + Math.random() * 9000); 
+            return `WKF-${year}${month}${day}-${random}`;
+        }
+
+        // Fungsi utama jana dan SIMPAN resit ke Firebase / Local
+        window.generateReceipt = async function(event) {
+            event.preventDefault();
+
+            if (!currentUser && !isOfflineMode) {
+                window.showToast("Sedang menyambung ke pelayan. Sila tunggu sebentar...", "info");
+                return;
+            }
+
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
+            btn.disabled = true;
+
+            try {
+                const name = document.getElementById('name').value;
+                const phone = document.getElementById('phone').value;
+                const amount = parseFloat(document.getElementById('amount').value).toFixed(2);
+                
+                const refNo = window.generateRefNo();
+                const currentDate = window.formatDate(new Date());
+                const timestamp = Date.now();
+
+                if (isOfflineMode) {
+                    // Simpan dalam memori jika Firebase tidak aktif
+                    receiptsData.unshift({
+                        id: 'local_' + timestamp,
+                        refNo: refNo,
+                        date: currentDate,
+                        name: name,
+                        phone: phone,
+                        amount: amount,
+                        timestamp: timestamp
+                    });
+                    window.showToast("Resit berjaya dijana (Disimpan Sementara).", "success");
+                } else {
+                    // Simpan rekod ke Firestore
+                    const colRef = collection(db, 'artifacts', customAppId, 'public', 'data', 'receipts');
+                    await addDoc(colRef, {
+                        refNo: refNo,
+                        date: currentDate,
+                        name: name,
+                        phone: phone,
+                        amount: amount,
+                        timestamp: timestamp
+                    });
+                    window.showToast("Resit berjaya disimpan ke pangkalan data awan!", "success");
+                }
+
+                // Paparan Resit
+                document.getElementById('displayRefNo').textContent = refNo;
+                document.getElementById('displayDate').textContent = currentDate;
+                document.getElementById('displayName').textContent = name;
+                document.getElementById('displayPhone').textContent = phone;
+                document.getElementById('displayAmount').textContent = 'RM ' + amount;
+
+                document.getElementById('formSection').classList.add('hidden');
+                document.getElementById('receiptSection').classList.remove('hidden');
+            } catch (error) {
+                console.error("Ralat menyimpan resit:", error);
+                window.showToast("Maaf, ralat berlaku semasa memproses resit.", "error");
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
+
+        window.sendWhatsApp = function() {
+            const name = document.getElementById('displayName').textContent;
+            let phone = document.getElementById('displayPhone').textContent;
+            const amount = document.getElementById('displayAmount').textContent;
+            const refNo = document.getElementById('displayRefNo').textContent;
+            const date = document.getElementById('displayDate').textContent;
+
+            phone = phone.replace(/\s+/g, '');
+            if (phone.startsWith('0')) {
+                phone = '6' + phone;
+            } else if (!phone.startsWith('6')) {
+                phone = '60' + phone; 
+            }
+
+            const message = `*RESIT SUMBANGAN RASMI*\nDana Pembelian Tanah Wakaf dan Pengurusan Kubur\nKampung Baru Batu Tumbuh\n\n` +
+                            `No. Resit: *${refNo}*\n` +
+                            `Tarikh: ${date}\n\n` +
+                            `Nama: ${name}\n` +
+                            `Jumlah: *${amount}*\n\n` +
+                            `Alhamdulillah, sumbangan tuan/puan ke akaun Bank Muamalat (13030001512718 - Wakaf Tanah Perkuburan) telah selamat diterima.\n\n` +
+                            `_Semoga Allah membalas jasa baik anda._`;
+
+            const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(waUrl, '_blank');
+        }
+
+        window.downloadImage = function() {
+            const receiptCard = document.getElementById('receiptCard');
+            const refNo = document.getElementById('displayRefNo').textContent;
+            
+            html2canvas(receiptCard, {
+                scale: 2,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Resit_Wakaf_${refNo}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        window.resetForm = function() {
+            document.getElementById('receiptForm').reset();
+            document.getElementById('receiptSection').classList.add('hidden');
+            document.getElementById('formSection').classList.remove('hidden');
+            document.getElementById('name').focus();
+        }
+
+        // --- PENGURUSAN ADMIN (MODAL) ---
+        window.openAdminLogin = function() {
+            const modal = document.getElementById('adminModal');
+            const content = document.getElementById('adminModalContent');
+            document.getElementById('adminPassword').value = '';
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+            document.getElementById('adminPassword').focus();
+        }
+
+        window.closeAdminLogin = function() {
+            const modal = document.getElementById('adminModal');
+            const content = document.getElementById('adminModalContent');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        window.submitAdminLogin = function() {
+            const pw = document.getElementById('adminPassword').value;
+            if (pw === "admin123") {
+                window.closeAdminLogin();
+                
+                document.getElementById('formSection').classList.add('hidden');
+                document.getElementById('receiptSection').classList.add('hidden');
+                document.getElementById('mainContainer').classList.remove('max-w-md');
+                document.getElementById('mainContainer').classList.add('max-w-4xl');
+                document.getElementById('adminSection').classList.remove('hidden');
+                
+                window.renderAdminTable();
+            } else {
+                window.showToast("Kata laluan salah. Sila cuba lagi.", "error");
+            }
+        }
+
+        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                window.submitAdminLogin();
+            }
+        });
+
+        window.closeAdmin = function() {
+            document.getElementById('adminSection').classList.add('hidden');
+            document.getElementById('mainContainer').classList.remove('max-w-4xl');
+            document.getElementById('mainContainer').classList.add('max-w-md');
+            document.getElementById('formSection').classList.remove('hidden');
+        }
+
+        // --- FUNGSI PADAM REKOD ---
+        window.confirmDelete = function(id) {
+            recordToDeleteId = id;
+            const modal = document.getElementById('deleteModal');
+            const content = document.getElementById('deleteModalContent');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        window.closeDeleteModal = function() {
+            const modal = document.getElementById('deleteModal');
+            const content = document.getElementById('deleteModalContent');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                recordToDeleteId = null;
+            }, 300);
+        }
+
+        window.executeDelete = async function() {
+            if (!recordToDeleteId) return;
+            
+            try {
+                if (recordToDeleteId.startsWith('local_')) {
+                    receiptsData = receiptsData.filter(item => item.id !== recordToDeleteId);
+                    window.renderAdminTable();
+                    window.showToast("Rekod berjaya dipadam (Lokal).", "success");
+                } else {
+                    const docRef = doc(db, 'artifacts', customAppId, 'public', 'data', 'receipts', recordToDeleteId);
+                    await deleteDoc(docRef);
+                    window.showToast("Rekod berjaya dipadam dari awan.", "success");
+                }
+            } catch (error) {
+                console.error("Ralat memadam rekod:", error);
+                window.showToast("Gagal memadam rekod.", "error");
+            } finally {
+                window.closeDeleteModal();
+            }
+        }
+
+        // Susun jadual data Admin
+        window.renderAdminTable = function() {
+            const tbody = document.getElementById('adminTableBody');
+            const emptyMsg = document.getElementById('emptyDataMsg');
+            let totalAmount = 0;
+            
+            tbody.innerHTML = ''; 
+
+            if (receiptsData.length === 0) {
+                emptyMsg.classList.remove('hidden');
+            } else {
+                emptyMsg.classList.add('hidden');
+                
+                receiptsData.forEach(data => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b hover:bg-gray-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-3 font-mono text-xs text-gray-600">${data.refNo}</td>
+                        <td class="p-3 text-xs text-gray-500">${data.date}</td>
+                        <td class="p-3 font-semibold text-gray-800">${data.name}</td>
+                        <td class="p-3 text-gray-600">${data.phone}</td>
+                        <td class="p-3 text-right font-bold text-green-700">RM ${data.amount}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="confirmDelete('${data.id}')" class="text-red-400 hover:text-red-600 transition p-2 bg-red-50 hover:bg-red-100 rounded-lg" title="Padam Rekod">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                    
+                    totalAmount += parseFloat(data.amount);
+                });
+            }
+
+            document.getElementById('adminTotalAmount').textContent = 'RM ' + totalAmount.toFixed(2);
+            document.getElementById('adminTotalCount').textContent = receiptsData.length;
+        }
     </script>
 </body>
 </html>
