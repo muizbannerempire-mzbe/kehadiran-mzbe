@@ -309,9 +309,14 @@
 
                                                 <div className="bg-gray-50 p-4 rounded-2xl border-l-4 border-blue-500 mb-4 font-bold text-xs">Sebab Diberikan:<br/><span className="font-medium italic text-gray-600 mt-1 block">"{att.lateReason || att.earlyLeaveReason || 'Tiada alasan'}"</span></div>
                                                 
-                                                <div className="flex gap-2 mt-4">
-                                                    <button onClick={() => handleDecision(att.id, 'Denda')} className="flex-1 bg-red-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-red-600 transition-all tracking-widest">Kekalkan Denda</button>
-                                                    <button onClick={() => handleDecision(att.id, 'Dikecualikan')} className="flex-1 bg-green-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-green-600 transition-all tracking-widest">Kecualikan (Maafkan)</button>
+                                                <div className="flex flex-col gap-2 mt-4">
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => handleDecision(att.id, 'Denda')} className="flex-1 bg-red-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-red-600 transition-all tracking-widest">Kekalkan Denda</button>
+                                                        <button onClick={() => handleDecision(att.id, 'Dikecualikan')} className="flex-1 bg-green-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-green-600 transition-all tracking-widest">Kecualikan (Maafkan)</button>
+                                                    </div>
+                                                    <button onClick={async () => { if(confirm("Adakah anda pasti mahu memadam rekod ini sepenuhnya?")) await db.collection('attendances').doc(att.id).delete(); }} className="w-full text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-100 font-black py-2.5 rounded-2xl text-[10px] uppercase transition-all tracking-widest flex items-center justify-center gap-2">
+                                                        <IconTrash2 size={14}/> Padam Rekod Ini
+                                                    </button>
                                                 </div>
                                             </div>
                                         )
