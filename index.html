@@ -98,7 +98,7 @@
             const [passwordInput, setPasswordInput] = useState('');
             const [loginError, setLoginError] = useState('');
             const [systemSettings, setSystemSettings] = useState({ 
-                clockOutTime: '17:00', storeLat: 5.76981, storeLng: 102.56142, bypassGps: false 
+                clockOutTime: '17:00', storeLat: 5.769745133537923, storeLng: 102.56141454050919, bypassGps: false 
             });
             
             const [leaves, setLeaves] = useState([]);
@@ -174,8 +174,20 @@
             );
 
             return currentUser.role === 'admin' ? 
-                <AdminDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} dbUsers={dbUsers} staticAdmins={staticAdmins} systemSettings={systemSettings} BrandLogo={BrandLogo} /> :
-                <EmployeeDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} systemSettings={systemSettings} BrandLogo={BrandLogo} />;
+                <AdminDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} specialRequests={specialRequests} dbUsers={dbUsers} staticAdmins={staticAdmins} systemSettings={systemSettings} BrandLogo={BrandLogo} /> :
+                <EmployeeDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} specialRequests={specialRequests} systemSettings={systemSettings} verifyLocationAndExecute={(n, c) => {
+                    if(systemSettings.bypassGps) return c();
+                    navigator.geolocation.getCurrentPosition(p => {
+                        const R = 6371e3; 
+                        const p1 = p.coords.latitude * Math.PI/180;
+                        const p2 = (systemSettings.storeLat || 5.769745133537923) * Math.PI/180;
+                        const dp = ((systemSettings.storeLat || 5.769745133537923) - p.coords.latitude) * Math.PI/180;
+                        const dl = ((systemSettings.storeLng || 102.56141454050919) - p.coords.longitude) * Math.PI/180;
+                        const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+                        const dist = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+                        if(dist <= 150) c(); else alert(`Luar Radius: ${Math.round(dist)}m. Sila masuk kawasan 150m.`);
+                    }, () => alert('GPS Gagal. Pastikan "Location" dihidupkan.'), { enableHighAccuracy: true });
+                }} BrandLogo={BrandLogo} />;
         }
 
         // ==========================================
@@ -534,8 +546,8 @@
                     const lat = p.coords.latitude;
                     const lng = p.coords.longitude;
                     const R = 6371e3;
-                    const storeLat = systemSettings.storeLat || 5.76981;
-                    const storeLng = systemSettings.storeLng || 102.56142;
+                    const storeLat = systemSettings.storeLat || 5.769745133537923;
+                    const storeLng = systemSettings.storeLng || 102.56141454050919;
                     const p1 = lat * Math.PI/180;
                     const p2 = storeLat * Math.PI/180;
                     const dp = (storeLat - lat) * Math.PI/180;
