@@ -585,6 +585,15 @@
                                     <button disabled={!att.clockIn || att.clockOut} onClick={() => initiateAction('clockOut')} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${(!att.clockIn || att.clockOut) ? 'bg-gray-50 text-gray-200' : 'bg-red-500 text-white active:scale-90 hover:bg-red-600'}`}><IconLogOut size={36}/><span className="font-black text-xs uppercase tracking-widest">Clock Out</span>{att.clockOut && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockOut}</span>}</button>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4"><button disabled={!att.clockIn || att.breakOut} onClick={() => initiateAction('breakOut')} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.clockIn || att.breakOut) ? 'bg-gray-100 text-gray-300' : 'bg-yellow-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase tracking-widest">Keluar Rehat</span>{att.breakOut && <span className="text-[10px] font-black">{att.breakOut}</span>}</button><button disabled={!att.breakOut || att.breakIn} onClick={() => initiateAction('breakIn')} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.breakOut || att.breakIn) ? 'bg-gray-100 text-gray-300' : 'bg-blue-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase tracking-widest">Masuk Rehat</span>{att.breakIn && <span className="text-[10px] font-black">{att.breakIn}</span>}</button></div>
+                                
+                                <div className="bg-purple-50 p-4 rounded-3xl border border-purple-100 grid grid-cols-2 gap-3 mt-2">
+                                    <button disabled={att.otIn} onClick={() => initiateAction('otIn')} className={`p-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${att.otIn ? 'bg-white border-2 border-gray-100 text-gray-300' : 'bg-purple-600 text-white shadow-md active:scale-95'}`}>
+                                        OT Masuk {att.otIn && <span className="block mt-1 text-[11px] font-black">{att.otIn}</span>}
+                                    </button>
+                                    <button disabled={!att.otIn || att.otOut} onClick={() => initiateAction('otOut')} className={`p-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${(!att.otIn || att.otOut) ? 'bg-white border-2 border-gray-100 text-gray-300' : 'bg-purple-800 text-white shadow-md active:scale-95'}`}>
+                                        OT Keluar {att.otOut && <span className="block mt-1 text-[11px] font-black">{att.otOut}</span>}
+                                    </button>
+                                </div>
                             </div>
                         )}
                         {/* Selebihnya kod (Mohon Cuti, Umum, dsb) kekal sama */}
