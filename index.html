@@ -361,6 +361,7 @@
                                                         <div className="flex justify-between font-black text-red-800 text-[10px] uppercase tracking-widest border-b border-red-200 pb-2 mb-2"><span>{u?.name || log.userId}</span><span>{log.date} {log.time}</span></div>
                                                         <p className="text-[10px] font-bold text-red-700">Tindakan: <span className="uppercase">{log.action}</span></p>
                                                         <p className="text-[10px] font-bold text-red-700">Jarak Semasa Dikesan: <span className="text-red-900">{log.distance} Meter</span> (Melebihi 70m)</p>
+                                                        {log.accuracy && <p className="text-[10px] font-bold text-red-700">Ketepatan (Accuracy): <span className="text-red-900">±{log.accuracy}m</span></p>}
                                                         <p className="text-[10px] text-red-500 font-mono mt-1">Koordinat GPS: {log.lat.toFixed(5)}, {log.lng.toFixed(5)}</p>
                                                     </div>
                                                 )
@@ -519,28 +520,30 @@
                 }
             };
 
-            const handleActionClick = (action) => {
-                if (currentUser.id === 'MZBEBOSS001' || currentUser.id === 'ADMIN') {
-                    recordNormal(action);
-                    return;
-                }
-
+            const verifyLocationStrict = (actionName, onSuccess) => {
                 if (systemSettings.bypassGps === true) {
-                    processTimeCheckAndExecute(action);
+                    onSuccess();
                     return;
                 }
 
-                setModalMsg({ type: 'info', text: 'Mengesahkan lokasi GPS anda...\nSila tunggu sebentar.' });
+                setModalMsg({ type: 'info', text: 'Sistem sedang mendapatkan dan mengesahkan ketepatan lokasi satelit anda...\n\nSila tunggu sebentar.' });
                 
                 if (!navigator.geolocation) {
-                    setModalMsg({ type: 'error', text: 'GPS tidak disokong pada peranti atau browser anda.' });
+                    setModalMsg({ type: 'error', text: 'Sistem GPS tidak disokong pada peranti atau pelayar internet anda.' });
                     return;
                 }
 
-                // Gunakan enableHighAccuracy: true dan maximumAge: 0 untuk halang Cache GPS
                 navigator.geolocation.getCurrentPosition(async (p) => {
                     const lat = parseFloat(p.coords.latitude);
                     const lng = parseFloat(p.coords.longitude);
+                    const accuracy = parseFloat(p.coords.accuracy);
+
+                    // Tolak jika ketepatan terlampau lemah (> 150 meter error margin)
+                    if (accuracy > 150) {
+                        setModalMsg({ type: 'error', text: `RALAT KETEPATAN GPS: Isyarat GPS telefon anda terlalu lemah (Ralat ±${Math.round(accuracy)} meter).\n\nSistem mengesyaki anda menggunakan lokasi Rangkaian (Telco) yang tidak tepat.\n\nSila berjalan ke luar bangunan, atau matikan/hidupkan semula 'Location' di telefon anda untuk mendapatkan isyarat satelit yang tepat.` });
+                        return;
+                    }
+
                     const R = 6371e3;
                     const storeLat = parseFloat(systemSettings.storeLat) || 5.769745133537923;
                     const storeLng = parseFloat(systemSettings.storeLng) || 102.56141454050919;
@@ -551,59 +554,78 @@
                     const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
                     const dist = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 
-                    // Pastikan kiraan tak ralat & semak jarak
                     if (dist > 70 || isNaN(dist)) {
                         try {
                             await db.collection('failed_gps_logs').add({
                                 userId: currentUser.id,
-                                action: action,
+                                action: actionName,
                                 date: today,
                                 time: new Date().toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', hour12: true }),
                                 lat: lat,
                                 lng: lng,
                                 distance: isNaN(dist) ? 0 : Math.round(dist),
+                                accuracy: Math.round(accuracy),
                                 timestamp: Date.now()
                             });
                         } catch(e) { console.error(e); }
 
                         setModalMsg({
                             type: 'error',
-                            text: `TIDAK SAH! ANDA DI LUAR KAWASAN.\n\nJarak Semasa: ${isNaN(dist) ? 'Tidak Diketahui' : Math.round(dist)} meter.\nHad radius ialah 70m sahaja dari kedai.\n\nPercubaan anda telah direkod ke dalam Sistem Admin.`
+                            text: `TIDAK SAH! ANDA DI LUAR KAWASAN.\n\nJarak Semasa: ${isNaN(dist) ? 'Tidak Diketahui' : Math.round(dist)} meter dari kedai.\nHad radius kebenaran ialah 70m sahaja.\n\nPercubaan ini telah direkodkan ke dalam Sistem Admin.`
                         });
                     } else {
                         setModalMsg(null);
-                        processTimeCheckAndExecute(action);
+                        onSuccess();
                     }
                 }, (err) => {
-                    setModalMsg({ type: 'error', text: `Sistem GPS Gagal (${err.message}).\nPastikan 'Location' telefon dihidupkan dan anda membenarkan akses ('Allow') lokasi di pelayar internet.` });
+                    let errorMsg = `Sistem GPS Gagal (${err.message}).`;
+                    if (err.code === 1) errorMsg += "\nSila pastikan anda menekan 'Allow' (Benarkan) apabila browser meminta akses lokasi.";
+                    if (err.code === 2) errorMsg += "\nPosisi GPS tidak dapat dibaca oleh peranti anda.";
+                    if (err.code === 3) errorMsg += "\nTimeout: Sila pastikan 'Location' anda menyala.";
+                    setModalMsg({ type: 'error', text: errorMsg });
                 }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+            };
+
+            const handleActionClick = (action) => {
+                if (currentUser.id === 'MZBEBOSS001' || currentUser.id === 'ADMIN') {
+                    processTimeCheckAndExecute(action);
+                    return;
+                }
+                
+                // Semakan ketat sebelum buka modal (atau sebelum rekod)
+                verifyLocationStrict(action, () => processTimeCheckAndExecute(action));
             };
 
             const submitReasonAndRecord = async (e) => {
                 e.preventDefault();
-                const time = new Date().toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', hour12: true });
-                let dataToUpdate = { [reasonModal.action]: time };
                 
-                if (reasonModal.action === 'clockIn') {
-                    dataToUpdate.lateReason = inputReason;
-                    dataToUpdate.penaltyType = reasonModal.penaltyType;
-                    dataToUpdate.penaltyValue = reasonModal.penaltyValue;
-                    dataToUpdate.penaltyStatus = 'Pending';
-                } else if (reasonModal.action === 'clockOut') {
-                    dataToUpdate.earlyLeaveReason = inputReason;
-                    dataToUpdate.penaltyType = reasonModal.penaltyType;
-                    dataToUpdate.penaltyStatus = 'Pending';
-                }
-
-                try {
-                    if (att.id) await db.collection('attendances').doc(att.id).update(dataToUpdate);
-                    else await db.collection('attendances').add({ userId: currentUser.id, date: today, ...dataToUpdate, clockIn: reasonModal.action==='clockIn'?time:null, clockOut:null, breakOut:null, breakIn:null, otIn:null, otOut:null });
+                // SEMAKAN SEKALI LAGI SEBELUM REKOD!
+                // Ini menghalang kelompangan (loophole) di mana pekerja bawa balik telefon dengan modal terpasang dan klik 'Submit' di rumah.
+                verifyLocationStrict(reasonModal.action, async () => {
+                    const time = new Date().toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    let dataToUpdate = { [reasonModal.action]: time };
                     
-                    setReasonModal({show:false}); 
-                    setInputReason(''); 
-                    setModalMsg({ type: 'success', text: `Kehadiran telah berjaya direkodkan pada ${time}.` });
-                    setTimeout(() => setModalMsg(null), 4000);
-                } catch (err) { setModalMsg({ type: 'error', text: err.message }); }
+                    if (reasonModal.action === 'clockIn') {
+                        dataToUpdate.lateReason = inputReason;
+                        dataToUpdate.penaltyType = reasonModal.penaltyType;
+                        dataToUpdate.penaltyValue = reasonModal.penaltyValue;
+                        dataToUpdate.penaltyStatus = 'Pending';
+                    } else if (reasonModal.action === 'clockOut') {
+                        dataToUpdate.earlyLeaveReason = inputReason;
+                        dataToUpdate.penaltyType = reasonModal.penaltyType;
+                        dataToUpdate.penaltyStatus = 'Pending';
+                    }
+
+                    try {
+                        if (att.id) await db.collection('attendances').doc(att.id).update(dataToUpdate);
+                        else await db.collection('attendances').add({ userId: currentUser.id, date: today, ...dataToUpdate, clockIn: reasonModal.action==='clockIn'?time:null, clockOut:null, breakOut:null, breakIn:null, otIn:null, otOut:null });
+                        
+                        setReasonModal({show:false}); 
+                        setInputReason(''); 
+                        setModalMsg({ type: 'success', text: `Kehadiran telah berjaya direkodkan pada ${time}.` });
+                        setTimeout(() => setModalMsg(null), 4000);
+                    } catch (err) { setModalMsg({ type: 'error', text: err.message }); }
+                });
             };
 
             const checkMyDistance = () => {
@@ -611,6 +633,7 @@
                 navigator.geolocation.getCurrentPosition((p) => {
                     const lat = parseFloat(p.coords.latitude);
                     const lng = parseFloat(p.coords.longitude);
+                    const accuracy = parseFloat(p.coords.accuracy);
                     const R = 6371e3;
                     const storeLat = parseFloat(systemSettings.storeLat) || 5.769745133537923;
                     const storeLng = parseFloat(systemSettings.storeLng) || 102.56141454050919;
@@ -619,18 +642,20 @@
                     const dp = (storeLat - lat) * Math.PI/180;
                     const dl = (storeLng - lng) * Math.PI/180;
                     const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-                    const dist = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+                    const dist = Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))));
                     
-                    setCurrentDist(Math.round(dist));
-                    if(Math.round(dist) <= 70) {
-                        setModalMsg({ type: 'success', text: `Tepat!\nJarak anda ialah ${Math.round(dist)} meter.\nAnda berada di dalam kawasan kedai.` });
+                    setCurrentDist(dist);
+                    if(dist <= 70) {
+                        setModalMsg({ type: 'success', text: `Kedudukan Anda Tepat!\n\nJarak dari kedai: ${dist} meter.\nKetepatan isyarat GPS: ±${Math.round(accuracy)} meter.\n\nAnda dibenarkan untuk membuat transaksi kehadiran.` });
                     } else {
-                        setModalMsg({ type: 'error', text: `Luar Kawasan!\nJarak anda ialah ${Math.round(dist)} meter.\nHad radius kedai ialah 70m sahaja.` });
+                        setModalMsg({ type: 'error', text: `Luar Kawasan!\n\nJarak anda ialah ${dist} meter.\nKetepatan isyarat GPS: ±${Math.round(accuracy)} meter.\n\nSila masuk ke dalam lingkungan radius 70m.` });
                     }
                 }, (err) => {
-                    setModalMsg({ type: 'error', text: `Ralat GPS: ${err.message}`});
+                    let errorMsg = `Ralat GPS: ${err.message}`;
+                    if (err.code === 1) errorMsg += "\nSila beri kebenaran 'Allow' lokasi pada pelayar internet anda.";
+                    setModalMsg({ type: 'error', text: errorMsg});
                 }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
-            }
+            };
 
             return (
                 <div className="min-h-screen bg-gray-50 pb-20 relative text-sm">
@@ -646,7 +671,7 @@
                                 {modalMsg.type==='success'&&<IconCheckCircle className="mx-auto text-green-500 mb-4" size={56}/>}
                                 {modalMsg.type==='info'&&<IconMap className="mx-auto text-blue-500 mb-4 animate-bounce" size={56}/>}
                                 <p className="font-bold text-sm mb-6 leading-relaxed whitespace-pre-line">{modalMsg.text}</p>
-                                {modalMsg.type !== 'info' && <button onClick={()=>setModalMsg(null)} className="w-full bg-gray-900 text-white py-4 rounded-xl font-black uppercase tracking-widest active:scale-95 transition-all">Tutup</button>}
+                                {modalMsg.type !== 'info' && <button onClick={()=>setModalMsg(null)} className="w-full bg-gray-900 text-white py-4 rounded-xl font-black uppercase tracking-widest active:scale-95 transition-all shadow-md">Tutup</button>}
                             </div>
                         </div>
                     )}
@@ -722,7 +747,7 @@
                                 </div>
                             </div>
                         )}
-                        {/* Selebihnya kod (Mohon Cuti, Umum, dsb) kekal sama */}
+
                         {tab === 'mohon_cuti' && (
                              <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 uppercase"><h2 className="font-black text-gray-800 mb-5 tracking-widest text-sm uppercase">Borang Cuti</h2><form onSubmit={async (e) => { e.preventDefault(); try { const f = e.target; await db.collection('leaves').add({ userId: currentUser.id, type: f.type.value, date: f.date.value, reason: f.reason.value, status: 'Pending', timestamp: Date.now() }); setModalMsg({type: 'success', text: "Permohonan berjaya dihantar!"}); setTab('rekod_cuti'); } catch(e){alert(e.message);} }} className="space-y-4"><select name="type" className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs uppercase tracking-widest outline-none focus:border-blue-500"><option>Cuti Bergaji</option><option>Cuti Tanpa Gaji</option><option>Cuti Sakit (MC)</option><option>Cuti Kecemasan</option></select><input type="date" name="date" min={today} className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs outline-none focus:border-blue-500" required /><textarea name="reason" placeholder="Alasan Cuti..." className="w-full border-2 p-3 rounded-xl bg-gray-50 h-24 resize-none font-bold text-xs outline-none focus:border-blue-500" required></textarea><button type="submit" className="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-green-700 uppercase text-xs tracking-widest transition-all active:scale-95">Hantar Permohonan</button></form></div>
                         )}
