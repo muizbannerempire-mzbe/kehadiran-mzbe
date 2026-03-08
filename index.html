@@ -16,13 +16,16 @@
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         @media print {
-            .no-print { display: none; }
-            .print-only { display: block; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
             body { background: white; }
+            .print-table { width: 100%; border-collapse: collapse; }
+            .print-table th, .print-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .print-table th { background-color: #f3f4f6; }
         }
     </style>
 </head>
-<body class="bg-gray-100 antialiased">
+<body class="bg-gray-100 antialiased text-gray-800">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -41,8 +44,10 @@
         const IconSettings = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
         const IconMap = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>;
         const IconPrinter = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>;
+        const IconClipboardCheck = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>;
+        const IconDownload = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
 
-        // --- DATA CUTI UMUM 2026 (BERDASARKAN GAMBAR ANDA) ---
+        // --- CUTI UMUM 2026 ---
         const publicHolidays2026 = [
             { id: 1, dateStr: '17 Januari (Sabtu)', event: 'Israk Mikraj' },
             { id: 2, dateStr: '17 Feb (Selasa)', event: 'Tahun Baru Cina' },
@@ -58,6 +63,7 @@
             { id: 12, dateStr: '16 September (Rabu)', event: 'Hari Malaysia' },
         ];
 
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyA20Va8z_pTNvo1d6v3T0GZSJz7nSMTTiU",
             authDomain: "kehadiran-web.firebaseapp.com",
@@ -71,7 +77,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Senarai Pekerja Asal untuk "Sync"
+        // Senarai Pekerja Asal
         const originalWorkers = [
             { id: 'MZBE072022', name: 'NUR MAISARAH BINTI AHMAD RIZAL', password: 'MZBE072022', role: 'pekerja' },
             { id: 'MZBE082022', name: 'WAN ADIB ASHRAF BIN AB WAHAB', password: 'MZBE082022', role: 'pekerja' },
@@ -97,7 +103,6 @@
             
             const [leaves, setLeaves] = useState([]);
             const [attendances, setAttendances] = useState([]);
-            const [specialRequests, setSpecialRequests] = useState([]); 
             const [dbUsers, setDbUsers] = useState([]);
 
             const staticAdmins = [
@@ -129,13 +134,12 @@
                     setAttendances(s.docs.map(d => ({ id: d.id, ...d.data() })));
                     setIsDbReady(true);
                 });
-                const unsubReq = db.collection('special_requests').onSnapshot(s => setSpecialRequests(s.docs.map(d => ({ id: d.id, ...d.data() }))));
                 const unsubUsers = db.collection('users').onSnapshot(s => {
                     const fetchedUsers = s.docs.map(d => ({ id: d.id, ...d.data() }));
                     setDbUsers(fetchedUsers);
                     syncOriginalWorkers(fetchedUsers);
                 });
-                return () => { unsubSettings(); unsubLeaves(); unsubAtt(); unsubReq(); unsubUsers(); };
+                return () => { unsubSettings(); unsubLeaves(); unsubAtt(); unsubUsers(); };
             }, [firebaseUser]);
 
             const handleLogin = (e) => {
@@ -170,8 +174,8 @@
             );
 
             return currentUser.role === 'admin' ? 
-                <AdminDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} specialRequests={specialRequests} dbUsers={dbUsers} staticAdmins={staticAdmins} systemSettings={systemSettings} BrandLogo={BrandLogo} /> :
-                <EmployeeDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} specialRequests={specialRequests} systemSettings={systemSettings} verifyLocationAndExecute={(n, c) => {
+                <AdminDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} dbUsers={dbUsers} staticAdmins={staticAdmins} systemSettings={systemSettings} BrandLogo={BrandLogo} /> :
+                <EmployeeDashboard currentUser={currentUser} setCurrentUser={setCurrentUser} leaves={leaves} attendances={attendances} systemSettings={systemSettings} verifyLocationAndExecute={(n, c) => {
                     if(systemSettings.bypassGps) return c();
                     navigator.geolocation.getCurrentPosition(p => {
                         const R = 6371e3; 
@@ -182,123 +186,133 @@
                         const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
                         const dist = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
                         if(dist <= 150) c(); else alert(`Luar Radius: ${Math.round(dist)}m. Sila masuk kawasan 150m.`);
-                    }, () => alert('GPS Gagal. Benarkan lokasi dalam pelayar.'), { enableHighAccuracy: true });
+                    }, () => alert('GPS Gagal. Pastikan "Location" dihidupkan.'), { enableHighAccuracy: true });
                 }} BrandLogo={BrandLogo} />;
         }
 
         // ==========================================
         // PANEL ADMIN
         // ==========================================
-        function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, dbUsers, staticAdmins, systemSettings, BrandLogo }) {
+        function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, dbUsers, staticAdmins, systemSettings, BrandLogo }) {
             const [tab, setTab] = useState('kehadiran');
             const [analisaPeriod, setAnalisaPeriod] = useState('Bulan Ini');
             const [analisaUser, setAnalisaUser] = useState('ALL');
             const [newStaf, setNewStaf] = useState({ name: '', id: '', password: '' });
 
-            const handleStatusRequest = async (id, status) => {
-                try { await db.collection('special_requests').doc(id).update({ status }); } catch (e) { alert(e.message); }
-            };
-
             const allPekerja = [...dbUsers, ...staticAdmins].filter(u => u.role === 'pekerja' || u.id === 'MZBEBOSS001');
 
-            const getAnalisaData = (uid) => {
-                const isDateInPeriod = (dateStr) => {
-                    if (!dateStr) return false;
-                    const d = new Date(dateStr);
-                    const now = new Date();
-                    if (analisaPeriod === 'Minggu Ini') {
-                        const monday = new Date(now); monday.setDate(now.getDate() - (now.getDay() || 7) + 1);
-                        monday.setHours(0,0,0,0); return d >= monday;
-                    }
-                    if (analisaPeriod === 'Bulan Ini') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                    if (analisaPeriod === 'Tahun Ini') return d.getFullYear() === now.getFullYear();
-                    return true;
-                };
-                const userAtt = attendances.filter(a => (uid === 'ALL' || a.userId === uid) && isDateInPeriod(a.date));
-                const requests = specialRequests.filter(r => (uid === 'ALL' || r.userId === uid) && isDateInPeriod(r.date));
-                
-                const penaltyRM5 = requests.filter(r => r.penaltyValue === 5 && r.status !== 'Lulus').length;
-                const penaltyRM10 = requests.filter(r => r.penaltyValue === 10 && r.status !== 'Lulus').length;
-                const halfPay = requests.filter(r => r.penaltyValue === 'HalfPay' && r.status !== 'Lulus').length;
-                const absentDues = requests.filter(r => r.penaltyValue === 'Absent' && r.status !== 'Lulus').length;
+            const handleDecision = async (id, status) => {
+                try { await db.collection('attendances').doc(id).update({ penaltyStatus: status }); } catch (e) { alert(e.message); }
+            };
 
-                return { hadir: userAtt.length, dendaWang: (penaltyRM5 * 5) + (penaltyRM10 * 10), separuhGaji: halfPay, tidakHadir: absentDues };
+            const isDateInPeriod = (dateStr) => {
+                if (!dateStr) return false;
+                const d = new Date(dateStr);
+                const now = new Date();
+                if (analisaPeriod === 'Minggu Ini') {
+                    const monday = new Date(now); monday.setDate(now.getDate() - (now.getDay() || 7) + 1);
+                    monday.setHours(0,0,0,0); return d >= monday;
+                }
+                if (analisaPeriod === 'Bulan Ini') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                if (analisaPeriod === 'Tahun Ini') return d.getFullYear() === now.getFullYear();
+                return true;
+            };
+
+            const getAnalisaData = (uid) => {
+                const userAtt = attendances.filter(a => (uid === 'ALL' || a.userId === uid) && isDateInPeriod(a.date));
+                const userLeaves = leaves.filter(l => (uid === 'ALL' || l.userId === uid) && l.status === 'Lulus' && isDateInPeriod(l.date));
+                
+                let penaltyRM5 = 0; let penaltyRM10 = 0; let halfPay = 0; let absentDues = 0; let totalLate = 0;
+
+                userAtt.forEach(a => {
+                    // Hanya kira denda jika statusnya BUKAN 'Dikecualikan'
+                    if (a.penaltyType && a.penaltyStatus !== 'Dikecualikan') {
+                        totalLate++;
+                        if (a.penaltyValue === 5) penaltyRM5++;
+                        if (a.penaltyValue === 10) penaltyRM10++;
+                        if (a.penaltyType === 'HalfPay') halfPay++;
+                        if (a.penaltyType === 'Absent') absentDues++;
+                    }
+                });
+
+                return { hadir: userAtt.length, lambat: totalLate, dendaWang: (penaltyRM5 * 5) + (penaltyRM10 * 10), separuhGaji: halfPay, tidakHadir: absentDues };
             };
 
             const summary = getAnalisaData(analisaUser);
+            
+            const pendingPenaltiesCount = attendances.filter(a => a.penaltyType && a.penaltyStatus === 'Pending').length;
+
+            const downloadCSV = () => {
+                let csv = "\uFEFF"; // BOM for Excel UTF-8
+                if (analisaUser === 'ALL') {
+                    csv += "Nama Pekerja,Hadir,Lewat Dikenakan Denda,Denda Wang (RM),Potong Separuh Gaji,Tidak Hadir\n";
+                    allPekerja.forEach(p => {
+                        const d = getAnalisaData(p.id);
+                        csv += `"${p.name}",${d.hadir},${d.lambat},${d.dendaWang},${d.separuhGaji},${d.tidakHadir}\n`;
+                    });
+                } else {
+                    const selUser = allPekerja.find(p=>p.id === analisaUser)?.name || '';
+                    csv += `Laporan Terperinci: ${selUser} (${analisaPeriod})\n\n`;
+                    csv += "Tarikh,Masuk,Keluar,Status Denda,Sebab Lewat/Awal,Potongan Dikenakan\n";
+                    attendances.filter(a => a.userId === analisaUser && isDateInPeriod(a.date)).forEach(a => {
+                        const isExcused = a.penaltyStatus === 'Dikecualikan';
+                        const statusDenda = a.penaltyType ? (isExcused ? 'DIKECUALIKAN' : 'DIKENAKAN DENDA') : 'NORMAL';
+                        const potongan = (a.penaltyType && !isExcused) ? (a.penaltyType==='HalfPay' ? '50% Gaji' : a.penaltyType==='Absent' ? 'Tidak Hadir' : `RM${a.penaltyValue}`) : '-';
+                        const reason = a.lateReason || a.earlyLeaveReason || '-';
+                        csv += `${a.date},${a.clockIn || '-'},${a.clockOut || '-'},${statusDenda},"${reason}",${potongan}\n`;
+                    });
+                }
+                const link = document.createElement("a");
+                link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+                link.download = `Laporan_Kehadiran_${analisaPeriod.replace(' ', '_')}.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
 
             return (
-                <div className="min-h-screen bg-gray-50 pb-20 no-print">
-                    <div className="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center">
+                <div className="min-h-screen bg-gray-50 pb-20 text-sm">
+                    <div className="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center no-print">
                         <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold uppercase tracking-tight">Panel Admin</h1><p className="text-[10px] opacity-80 uppercase font-black">{currentUser.name}</p></div></div>
                         <button onClick={() => setCurrentUser(null)} className="p-2 bg-blue-700 rounded-full hover:bg-blue-800"><IconLogOut size={18} /></button>
                     </div>
 
                     <div className="p-4 max-w-5xl mx-auto space-y-6">
-                        <div className="flex bg-white rounded-xl shadow-sm overflow-x-auto hide-scroll border border-gray-100">
-                            {['kehadiran', 'analisa', 'kebenaran', 'staf', 'umum', 'tetapan'].map(t => (
+                        <div className="flex bg-white rounded-xl shadow-sm overflow-x-auto hide-scroll border border-gray-100 no-print">
+                            {['kehadiran', 'pengesahan', 'analisa', 'staf', 'umum', 'tetapan'].map(t => (
                                 <button key={t} onClick={() => setTab(t)} className={`flex-none px-6 py-4 text-[11px] font-black uppercase tracking-widest transition-all ${tab === t ? 'bg-blue-50 text-blue-600 border-b-2 border-blue-600' : 'text-gray-400'}`}>
-                                    {t === 'kebenaran' && specialRequests.filter(r => r.status === 'Pending').length > 0 && "🔴 "}{t}
+                                    {t === 'pengesahan' && pendingPenaltiesCount > 0 && "🔴 "}{t}
                                 </button>
                             ))}
                         </div>
 
-                        {/* TAB: KEHADIRAN (DENGAN PAPARAN DENDA) */}
-                        {tab === 'kehadiran' && (
-                             <div className="space-y-4">
-                                {attendances.slice().reverse().map((att, i) => {
-                                    const user = [...dbUsers, ...staticAdmins].find(u => u.id === att.userId);
-                                    // Cari jika ada denda/rayuan untuk rekod ini
-                                    const req = specialRequests.find(r => r.userId === att.userId && r.date === att.date && r.type === 'Masuk Lambat');
-                                    
-                                    return (
-                                        <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
-                                            <div className="flex justify-between border-b pb-2 mb-2 font-black text-gray-800 uppercase text-xs"><span>{user?.name || att.userId}</span><span className="text-[9px] text-gray-400 font-bold">{att.date}</span></div>
-                                            <div className="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase"><div>Masuk: <span className="text-blue-600">{att.clockIn || '-'}</span></div><div>Keluar: <span className="text-red-600">{att.clockOut || '-'}</span></div><div>Rehat: <span>{att.breakOut || '-'} / {att.breakIn || '-'}</span></div><div className="text-purple-600">OT: {att.otIn || '-'} / {att.otOut || '-'}</div></div>
-                                            
-                                            {/* PAPARAN DENDA DI BAWAH REKOD */}
-                                            {req && (
-                                                <div className={`mt-3 p-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-between ${req.status === 'Lulus' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
-                                                    <span>STATUS DENDA: {req.penaltyType === 'Absent' ? 'TIDAK HADIR' : req.penaltyType === 'HalfPay' ? 'POTONG 50%' : `RM${req.penaltyValue}`}</span>
-                                                    <span className="bg-white px-2 py-0.5 rounded-full shadow-sm">{req.status === 'Lulus' ? 'DIBATALKAN' : 'AKTIF'}</span>
-                                                </div>
-                                            )}
-
-                                            <button onClick={async () => { if(confirm("Padam rekod ini?")) await db.collection('attendances').doc(att.id).delete(); }} className="mt-3 w-full text-gray-300 hover:text-red-500 text-[9px] py-1 bg-gray-50 hover:bg-red-50 rounded-lg flex items-center justify-center gap-2 font-black uppercase transition-all border border-transparent hover:border-red-100"><IconTrash2 size={12}/> Padam</button>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
-
-                        {/* TAB: KEBENARAN MASA */}
-                        {tab === 'kebenaran' && (
-                            <div className="space-y-4">
-                                <h2 className="font-black text-gray-700 uppercase tracking-widest text-sm flex items-center gap-2"><IconCheckCircle size={18} className="text-orange-500"/> Kelulusan Rayuan Masa</h2>
-                                {specialRequests.length === 0 ? (
-                                    <div className="bg-white p-10 rounded-3xl border-2 border-dashed border-gray-200 text-center text-gray-400 font-bold uppercase text-xs">Tiada rekod rayuan.</div>
+                        {/* TAB: PENGESAHAN DENDA (BARU) */}
+                        {tab === 'pengesahan' && (
+                            <div className="space-y-4 no-print">
+                                <h2 className="font-black text-gray-700 uppercase tracking-widest text-sm flex items-center gap-2"><IconClipboardCheck size={18} className="text-orange-500"/> Pengesahan Denda (Sebab Lewat / Balik Awal)</h2>
+                                {attendances.filter(a => a.penaltyType && a.penaltyStatus === 'Pending').length === 0 ? (
+                                    <div className="bg-white p-10 rounded-3xl border-2 border-dashed border-gray-200 text-center text-gray-400 font-bold uppercase text-xs tracking-widest">Tiada rekod pending buat masa ini.</div>
                                 ) : (
-                                    specialRequests.slice().reverse().map((req, i) => {
-                                        const u = [...dbUsers, ...staticAdmins].find(x => x.id === req.userId);
+                                    attendances.filter(a => a.penaltyType && a.penaltyStatus === 'Pending').reverse().map((att, i) => {
+                                        const u = allPekerja.find(x => x.id === att.userId);
                                         return (
-                                            <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                                            <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border-2 border-orange-200">
                                                 <div className="flex justify-between items-start mb-3">
-                                                    <div><h3 className="font-black text-gray-800 text-sm uppercase">{u?.name || req.userId}</h3><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{req.date} • <span className="text-blue-600">{req.type}</span></p></div>
-                                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${req.status==='Lulus'?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}`}>{req.status}</span>
+                                                    <div><h3 className="font-black text-gray-800 text-sm uppercase">{u?.name || att.userId}</h3><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{att.date} • {att.clockIn}</p></div>
+                                                    <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-orange-100 text-orange-700">PENDING</span>
                                                 </div>
-                                                <div className="bg-gray-50 p-4 rounded-2xl border-l-4 border-blue-500 mb-4 font-medium text-xs italic">"{req.reason}"</div>
-                                                {req.penaltyType && (
-                                                    <div className="mb-4 bg-red-50 p-3 rounded-xl border border-red-100">
-                                                        <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">Penalti Lewat:</p>
-                                                        <p className="text-sm font-black text-red-800 uppercase">{req.penaltyType === 'Absent' ? 'DIKIRA TIDAK HADIR' : req.penaltyType === 'HalfPay' ? 'POTONG SEPARUH GAJI' : `POTONGAN RM${req.penaltyValue}`}</p>
-                                                    </div>
-                                                )}
-                                                {req.status === 'Pending' && (
-                                                    <div className="flex gap-2">
-                                                        <button onClick={() => handleStatusRequest(req.id, 'Lulus')} className="flex-1 bg-green-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-green-600 transition-all tracking-widest">Lulus (Batal Denda)</button>
-                                                        <button onClick={() => handleStatusRequest(req.id, 'Ditolak')} className="flex-1 bg-red-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-red-600 transition-all tracking-widest">Tolak Rayuan</button>
-                                                    </div>
-                                                )}
+                                                
+                                                <div className="mb-4 bg-red-50 p-3 rounded-xl border border-red-100">
+                                                    <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">Kategori Denda:</p>
+                                                    <p className="text-sm font-black text-red-800 uppercase">{att.penaltyType === 'Absent' ? 'DIKIRA TIDAK HADIR' : att.penaltyType === 'HalfPay' ? 'POTONG SEPARUH GAJI' : att.penaltyType === 'EarlyLeave' ? 'BALIK AWAL' : `POTONGAN RM${att.penaltyValue}`}</p>
+                                                </div>
+
+                                                <div className="bg-gray-50 p-4 rounded-2xl border-l-4 border-blue-500 mb-4 font-bold text-xs">Sebab Diberikan:<br/><span className="font-medium italic text-gray-600 mt-1 block">"{att.lateReason || att.earlyLeaveReason || 'Tiada alasan'}"</span></div>
+                                                
+                                                <div className="flex gap-2 mt-4">
+                                                    <button onClick={() => handleDecision(att.id, 'Denda')} className="flex-1 bg-red-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-red-600 transition-all tracking-widest">Kekalkan Denda</button>
+                                                    <button onClick={() => handleDecision(att.id, 'Dikecualikan')} className="flex-1 bg-green-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-green-600 transition-all tracking-widest">Kecualikan (Maafkan)</button>
+                                                </div>
                                             </div>
                                         )
                                     })
@@ -306,32 +320,109 @@
                             </div>
                         )}
 
+                        {/* TAB: KEHADIRAN KESELURUHAN */}
+                        {tab === 'kehadiran' && (
+                             <div className="space-y-4 no-print">
+                                {attendances.slice().reverse().map((att, i) => {
+                                    const user = allPekerja.find(u => u.id === att.userId);
+                                    return (
+                                        <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+                                            <div className="flex justify-between border-b pb-2 mb-2 font-black text-gray-800 uppercase text-xs"><span>{user?.name || att.userId}</span><span className="text-[9px] text-gray-400 font-bold">{att.date}</span></div>
+                                            <div className="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase mb-2"><div>Masuk: <span className="text-blue-600">{att.clockIn || '-'}</span></div><div>Keluar: <span className="text-red-600">{att.clockOut || '-'}</span></div><div>Rehat: <span>{att.breakOut || '-'} / {att.breakIn || '-'}</span></div><div className="text-purple-600">OT: {att.otIn || '-'} / {att.otOut || '-'}</div></div>
+                                            
+                                            {att.penaltyType && (
+                                                <div className={`p-3 rounded-xl border text-[10px] uppercase font-bold mt-2 ${att.penaltyStatus === 'Dikecualikan' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                                    <div className="flex justify-between">
+                                                        <span>Denda: {att.penaltyType === 'Absent' ? 'TIDAK HADIR' : att.penaltyType === 'HalfPay' ? 'POTONG 50%' : att.penaltyType === 'EarlyLeave' ? 'BALIK AWAL' : `RM${att.penaltyValue}`}</span>
+                                                        <span className="bg-white px-2 py-0.5 rounded-md shadow-sm">{att.penaltyStatus || 'PENDING'}</span>
+                                                    </div>
+                                                    <div className="mt-1 text-gray-600 italic font-medium">Sebab: {att.lateReason || att.earlyLeaveReason || 'Tiada'}</div>
+                                                </div>
+                                            )}
+
+                                            <button onClick={async () => { if(confirm("Padam rekod ini?")) await db.collection('attendances').doc(att.id).delete(); }} className="mt-3 w-full text-gray-300 hover:text-red-500 text-[9px] py-2 bg-gray-50 hover:bg-red-50 rounded-lg flex items-center justify-center gap-2 font-black uppercase transition-all"><IconTrash2 size={12}/> Padam Rekod Ini</button>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+
                         {/* TAB: ANALISA */}
                         {tab === 'analisa' && (
                             <div className="space-y-4">
                                 <div className="bg-white p-6 rounded-3xl shadow-sm space-y-6 border border-gray-100">
-                                    <div className="flex items-center justify-between"><h2 className="font-black text-gray-800 flex items-center gap-2 uppercase tracking-wide"><IconChartBar className="text-blue-500"/> Analisa Pekerja</h2><button onClick={() => window.print()} className="bg-gray-100 p-2 rounded-lg"><IconPrinter size={20}/></button></div>
-                                    <div className="flex gap-2"><select value={analisaPeriod} onChange={e => setAnalisaPeriod(e.target.value)} className="flex-1 p-3 bg-gray-50 border-2 rounded-xl font-bold text-xs"><option>Minggu Ini</option><option>Bulan Ini</option><option>Tahun Ini</option><option>Semua Masa</option></select><select value={analisaUser} onChange={e => setAnalisaUser(e.target.value)} className="flex-[2] p-3 bg-gray-50 border-2 rounded-xl font-bold text-xs uppercase"><option value="ALL">Semua Pekerja</option>{allPekerja.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center shadow-sm"><p className="text-[9px] text-blue-600 font-black uppercase">HADIR</p><p className="text-3xl font-black">{summary.hadir}</p></div>
-                                        <div className="bg-red-50 p-4 rounded-2xl border border-red-100 text-center shadow-sm"><p className="text-[9px] text-red-600 font-black uppercase">DENDA (RM)</p><p className="text-3xl font-black">RM{summary.dendaWang}</p></div>
-                                        <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center shadow-sm"><p className="text-[9px] text-orange-600 font-black uppercase tracking-tight">POTONG SEPARUH</p><p className="text-3xl font-black">{summary.separuhGaji}</p></div>
-                                        <div className="bg-gray-900 p-4 rounded-2xl text-white text-center shadow-lg"><p className="text-[9px] font-black uppercase">TIDAK HADIR</p><p className="text-3xl font-black text-red-400">{summary.tidakHadir}</p></div>
+                                    <div className="flex items-center justify-between no-print">
+                                        <h2 className="font-black text-gray-800 flex items-center gap-2 uppercase tracking-wide"><IconChartBar className="text-blue-500"/> Analisa Kehadiran & Denda</h2>
+                                        <div className="flex gap-2">
+                                            <button onClick={downloadCSV} className="bg-green-50 text-green-600 hover:bg-green-100 p-2 rounded-lg transition-all flex items-center gap-2 font-bold text-xs px-3 uppercase"><IconDownload size={16}/> CSV</button>
+                                            <button onClick={() => window.print()} className="bg-blue-50 text-blue-600 hover:bg-blue-100 p-2 rounded-lg transition-all flex items-center gap-2 font-bold text-xs px-3 uppercase"><IconPrinter size={16}/> Print PDF</button>
+                                        </div>
                                     </div>
+                                    
+                                    <div className="flex flex-col sm:flex-row gap-2 no-print">
+                                        <select value={analisaPeriod} onChange={e => setAnalisaPeriod(e.target.value)} className="flex-1 p-3 bg-gray-50 border-2 rounded-xl font-bold text-xs"><option>Minggu Ini</option><option>Bulan Ini</option><option>Tahun Ini</option><option>Semua Masa</option></select>
+                                        <select value={analisaUser} onChange={e => setAnalisaUser(e.target.value)} className="flex-[2] p-3 bg-gray-50 border-2 rounded-xl font-bold text-xs uppercase"><option value="ALL">Semua Pekerja (Keseluruhan)</option>{allPekerja.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+                                    </div>
+                                    
+                                    {/* Print Header */}
+                                    <div className="print-only mb-4 hidden text-center">
+                                        <h1 className="text-xl font-black uppercase">LAPORAN KEHADIRAN & DENDA</h1>
+                                        <p className="text-sm font-bold uppercase">{analisaUser === 'ALL' ? 'Semua Pekerja' : allPekerja.find(p=>p.id===analisaUser)?.name} | {analisaPeriod}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center"><p className="text-[9px] text-blue-600 font-black uppercase">KEHADIRAN</p><p className="text-3xl font-black">{summary.hadir}</p></div>
+                                        <div className="bg-red-50 p-4 rounded-2xl border border-red-100 text-center"><p className="text-[9px] text-red-600 font-black uppercase">DENDA WANG</p><p className="text-3xl font-black">RM{summary.dendaWang}</p></div>
+                                        <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center"><p className="text-[9px] text-orange-600 font-black uppercase">POTONG 50% GAJI</p><p className="text-3xl font-black">{summary.separuhGaji} Hari</p></div>
+                                        <div className="bg-gray-900 p-4 rounded-2xl text-white text-center print:bg-gray-200 print:text-black print:border-gray-400 print:border"><p className="text-[9px] font-black uppercase">TIDAK HADIR</p><p className="text-3xl font-black text-red-400 print:text-red-600">{summary.tidakHadir} Hari</p></div>
+                                    </div>
+
+                                    {/* Detailed Table for Individual User */}
+                                    {analisaUser !== 'ALL' && (
+                                        <div className="mt-8 pt-6 border-t">
+                                            <h3 className="font-bold text-xs mb-4 uppercase tracking-widest text-gray-500">Perincian Harian</h3>
+                                            <table className="print-table w-full text-left text-xs">
+                                                <thead>
+                                                    <tr className="bg-gray-100 border-b-2 border-gray-300">
+                                                        <th className="p-3">Tarikh</th><th className="p-3">Masuk</th><th className="p-3">Keluar</th><th className="p-3">Status Denda</th><th className="p-3">Sebab Diberikan</th><th className="p-3 font-black text-red-600">Potongan</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {attendances.filter(a => a.userId === analisaUser && isDateInPeriod(a.date)).map(a => {
+                                                        const isExcused = a.penaltyStatus === 'Dikecualikan';
+                                                        const isPending = a.penaltyStatus === 'Pending';
+                                                        const status = a.penaltyType ? (isExcused ? 'DIKECUALIKAN' : isPending ? 'PENDING PENGESAHAN' : 'DIKENAKAN') : 'NORMAL';
+                                                        const amt = (a.penaltyType && !isExcused) ? (a.penaltyType === 'HalfPay' ? '50% Gaji' : a.penaltyType === 'Absent' ? 'TIDAK HADIR' : a.penaltyType === 'EarlyLeave' ? 'Balik Awal' : `RM${a.penaltyValue}`) : '-';
+                                                        return (
+                                                            <tr key={a.id} className="border-b border-gray-200">
+                                                                <td className="p-3 font-bold">{a.date}</td>
+                                                                <td className="p-3">{a.clockIn || '-'}</td>
+                                                                <td className="p-3">{a.clockOut || '-'}</td>
+                                                                <td className={`p-3 font-bold ${isExcused ? 'text-green-600' : a.penaltyType && !isPending ? 'text-red-600' : 'text-gray-500'}`}>{status}</td>
+                                                                <td className="p-3 italic text-gray-500">{a.lateReason || a.earlyLeaveReason || '-'}</td>
+                                                                <td className="p-3 font-black text-red-600">{amt}</td>
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
 
                         {/* TAB: STAF */}
                         {tab === 'staf' && (
-                             <div className="space-y-6 uppercase">
-                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUserPlus size={18}/> Tambah Staf</h2><form onSubmit={async (e) => { e.preventDefault(); const cid = newStaf.id.trim().toUpperCase(); await db.collection('users').doc(cid).set({ ...newStaf, id: cid, role: 'pekerja' }); setNewStaf({ name: '', id: '', password: '' }); alert("Pekerja berjaya didaftarkan!"); }} className="grid grid-cols-1 md:grid-cols-4 gap-4"><input type="text" placeholder="Nama Penuh" value={newStaf.name} onChange={e => setNewStaf({...newStaf, name: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none focus:border-blue-500 font-bold text-xs" required /><input type="text" placeholder="ID Pekerja" value={newStaf.id} onChange={e => setNewStaf({...newStaf, id: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none uppercase font-bold text-xs" required /><input type="text" placeholder="Kata Laluan" value={newStaf.password} onChange={e => setNewStaf({...newStaf, password: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none font-bold text-xs" required /><button type="submit" className="bg-blue-600 text-white font-black py-3 rounded-xl uppercase text-xs shadow-lg tracking-widest transition-all active:scale-95">Daftar Staf</button></form></div>
-                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUser size={18}/> Senarai Staf Aktif</h2><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead><tr className="bg-gray-50 text-[10px] text-gray-400 font-black uppercase"><th className="p-4">Nama Pekerja</th><th className="p-4 text-center">ID / Pass</th><th className="p-4 text-center">Tindakan</th></tr></thead><tbody>{dbUsers.map(u => (<tr key={u.id} className="border-b border-gray-50 transition-colors hover:bg-gray-50/50"><td className="p-4 font-bold text-gray-700 text-xs">{u.name}</td><td className="p-4 text-center text-[10px] font-mono">{u.id} / {u.password}</td><td className="p-4 text-center"><button onClick={async () => { if(confirm(`Padam staf ${u.id}?`)) await db.collection('users').doc(u.id).delete(); }} className="text-red-400 hover:text-red-600 p-2 transition-all"><IconTrash2 size={16}/></button></td></tr>))}</tbody></table></div></div>
+                             <div className="space-y-6 uppercase no-print">
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 flex items-center gap-2 mb-4 uppercase text-sm"><IconUserPlus size={18}/> Tambah Staf</h2><form onSubmit={async (e) => { e.preventDefault(); const cid = newStaf.id.trim().toUpperCase(); await db.collection('users').doc(cid).set({ ...newStaf, id: cid, role: 'pekerja' }); setNewStaf({ name: '', id: '', password: '' }); alert("Berjaya!"); }} className="grid grid-cols-1 md:grid-cols-4 gap-4"><input type="text" placeholder="Nama Penuh" value={newStaf.name} onChange={e => setNewStaf({...newStaf, name: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none focus:border-blue-500 font-bold text-xs" required /><input type="text" placeholder="ID Pekerja" value={newStaf.id} onChange={e => setNewStaf({...newStaf, id: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none uppercase font-bold text-xs" required /><input type="text" placeholder="Kata Laluan" value={newStaf.password} onChange={e => setNewStaf({...newStaf, password: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none font-bold text-xs" required /><button type="submit" className="bg-blue-600 text-white font-black py-3 rounded-xl uppercase text-xs shadow-lg tracking-widest transition-all active:scale-95">Daftar Staf</button></form></div>
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 flex items-center gap-2 mb-4 uppercase text-sm"><IconUser size={18}/> Senarai Staf Aktif</h2><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead><tr className="bg-gray-50 text-[10px] text-gray-400 font-black uppercase"><th className="p-4">Nama Pekerja</th><th className="p-4 text-center">ID / Pass</th><th className="p-4 text-center">Tindakan</th></tr></thead><tbody>{dbUsers.map(u => (<tr key={u.id} className="border-b border-gray-50 transition-colors hover:bg-gray-50/50"><td className="p-4 font-bold text-gray-700 text-xs">{u.name}</td><td className="p-4 text-center text-[10px] font-mono">{u.id} / {u.password}</td><td className="p-4 text-center"><button onClick={async () => { if(confirm(`Padam staf ${u.id}?`)) await db.collection('users').doc(u.id).delete(); }} className="text-red-400 hover:text-red-600 p-2 transition-all"><IconTrash2 size={16}/></button></td></tr>))}</tbody></table></div></div>
                              </div>
                         )}
 
+                        {/* TAB: UMUM */}
                         {tab === 'umum' && (
-                            <div className="bg-white p-7 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+                            <div className="bg-white p-7 rounded-3xl shadow-sm border border-gray-100 space-y-4 no-print">
                                 <h2 className="font-black text-gray-800 border-b pb-4 uppercase tracking-widest text-sm flex items-center gap-2"><IconCalendar className="text-blue-500"/> Jadual Cuti Umum 2026</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                     {publicHolidays2026.map(ph => (
@@ -344,14 +435,15 @@
                             </div>
                         )}
 
+                        {/* TAB: TETAPAN */}
                         {tab === 'tetapan' && (
-                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-6">
+                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-6 no-print">
                                 <h2 className="font-black text-gray-800 uppercase text-sm border-b pb-4"><IconSettings size={18}/> Kawalan Sistem</h2>
                                 <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100 space-y-6">
                                     <div className="flex items-center justify-between"><div><p className="text-[10px] font-black text-blue-800 uppercase tracking-widest">Waktu Balik Hari Ini</p></div><button onClick={async () => { const nt = systemSettings.clockOutTime === '17:00' ? '16:30' : '17:00'; await db.collection('settings').doc('config').set({ clockOutTime: nt }, { merge: true }); }} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-black text-lg shadow-xl uppercase transition-all active:scale-95">{systemSettings.clockOutTime === '17:00' ? '5:00 PM' : '4:30 PM'}</button></div>
                                     <div className="pt-4 border-t border-blue-100"><p className="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">Pusat GPS (150M)</p><button onClick={() => navigator.geolocation.getCurrentPosition(async (pos) => { await db.collection('settings').doc('config').set({ storeLat: pos.coords.latitude, storeLng: pos.coords.longitude }, { merge: true }); alert("Lokasi GPS kedai telah dikemaskini ke titik semasa anda!"); })} className="w-full bg-white text-blue-600 border-2 border-blue-100 py-3 rounded-xl font-black text-[10px] uppercase flex items-center justify-center gap-2 active:scale-95 transition-all"><IconMap size={14}/> Set Lokasi GPS Kedai Di Sini</button></div>
                                 </div>
-                                <div className="flex items-center justify-between p-5 bg-red-50 rounded-2xl border border-red-100"><div><p className="text-[10px] font-black text-red-800 uppercase tracking-widest">Bypass Radius (Hanya Ujian)</p></div><button onClick={async () => { await db.collection('settings').doc('config').set({ bypassGps: !systemSettings.bypassGps }, { merge: true }); }} className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase transition-all shadow-md ${systemSettings.bypassGps ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{systemSettings.bypassGps ? 'AKTIF' : 'MATI'}</button></div>
+                                <div className="flex items-center justify-between p-5 bg-red-50 rounded-2xl border border-red-100 font-black"><div><p className="text-[10px] uppercase tracking-widest text-red-800">Bypass Radius (Hanya Ujian)</p></div><button onClick={async () => { await db.collection('settings').doc('config').set({ bypassGps: !systemSettings.bypassGps }, { merge: true }); }} className={`px-6 py-2 rounded-xl text-[10px] uppercase transition-all shadow-md ${systemSettings.bypassGps ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{systemSettings.bypassGps ? 'AKTIF' : 'MATI'}</button></div>
                             </div>
                         )}
                     </div>
@@ -362,53 +454,103 @@
         // ==========================================
         // PORTAL PEKERJA
         // ==========================================
-        function EmployeeDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, systemSettings, verifyLocationAndExecute, BrandLogo }) {
+        function EmployeeDashboard({ currentUser, setCurrentUser, leaves, attendances, systemSettings, verifyLocationAndExecute, BrandLogo }) {
             const [tab, setTab] = useState('kehadiran');
-            const [reqModal, setReqModal] = useState({ show: false, type: '', penaltyType: '', penaltyValue: null });
-            const [reqReason, setReqReason] = useState('');
+            const [reasonModal, setReasonModal] = useState({ show: false, type: '', action: '', penaltyType: null, penaltyValue: null });
+            const [inputReason, setInputReason] = useState('');
             const today = new Date().toLocaleDateString('en-CA');
             const att = attendances.find(a => a.userId === currentUser.id && a.date === today) || { clockIn: null, clockOut: null };
 
-            // Cari jika ada denda untuk pekerja hari ini
-            const currentPenalty = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Masuk Lambat');
+            const recordNormal = async (field) => {
+                const time = new Date().toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', hour12: true });
+                try {
+                    if (att.id) await db.collection('attendances').doc(att.id).update({ [field]: time });
+                    else await db.collection('attendances').add({ userId: currentUser.id, date: today, [field]: time, clockIn: field==='clockIn'?time:null, clockOut:null, breakOut:null, breakIn:null, otIn:null, otOut:null });
+                    alert(`Berjaya rekod: ${time}`);
+                } catch (e) { alert(e.message); }
+            };
 
-            const checkTimeLimit = (action) => {
-                if (currentUser.id === 'MZBEBOSS001' || currentUser.id === 'ADMIN') return true;
+            const submitReasonAndRecord = async (e) => {
+                e.preventDefault();
+                verifyLocationAndExecute(reasonModal.action === 'clockIn' ? 'Masuk' : 'Keluar', async () => {
+                    const time = new Date().toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    let dataToUpdate = { [reasonModal.action]: time };
+                    
+                    if (reasonModal.action === 'clockIn') {
+                        dataToUpdate.lateReason = inputReason;
+                        dataToUpdate.penaltyType = reasonModal.penaltyType;
+                        dataToUpdate.penaltyValue = reasonModal.penaltyValue;
+                        dataToUpdate.penaltyStatus = 'Pending'; // Status awal perlukan pengesahan Admin
+                    } else if (reasonModal.action === 'clockOut') {
+                        dataToUpdate.earlyLeaveReason = inputReason;
+                        dataToUpdate.penaltyType = reasonModal.penaltyType;
+                        dataToUpdate.penaltyStatus = 'Pending';
+                    }
+
+                    try {
+                        if (att.id) await db.collection('attendances').doc(att.id).update(dataToUpdate);
+                        else await db.collection('attendances').add({ userId: currentUser.id, date: today, ...dataToUpdate, clockIn: reasonModal.action==='clockIn'?time:null, clockOut:null, breakOut:null, breakIn:null, otIn:null, otOut:null });
+                        
+                        setReasonModal({show:false}); 
+                        setInputReason(''); 
+                        alert(`Terima Kasih. Kehadiran anda telah direkod pada ${time}.`);
+                    } catch (err) { alert(err.message); }
+                });
+            };
+
+            const initiateAction = (action) => {
+                if (currentUser.id === 'MZBEBOSS001' || currentUser.id === 'ADMIN') {
+                    verifyLocationAndExecute(action, () => recordNormal(action));
+                    return;
+                }
+
                 const now = new Date();
                 const mins = now.getHours() * 60 + now.getMinutes();
 
                 if (action === 'clockIn') {
-                    const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Masuk Lambat');
-                    if (mins >= 660) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'Absent', penaltyValue: 'Absent' }); return false; } if (req.status !== 'Lulus') { alert('Hadir selepas 11 AM: TIDAK HADIR. Rayuan anda sedang menunggu kelulusan.'); return false; } }
-                    else if (mins >= 540) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'HalfPay', penaltyValue: 'HalfPay' }); return false; } if (req.status !== 'Lulus') { alert('Rayuan "Separuh Gaji" belum diluluskan Admin.'); return false; } }
-                    else if (mins >= 525) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'DendaRM10', penaltyValue: 10 }); return false; } if (req.status !== 'Lulus') { alert('Rayuan denda RM10 belum diluluskan Admin.'); return false; } }
-                    else if (mins > 495) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'DendaRM5', penaltyValue: 5 }); return false; } if (req.status !== 'Lulus') { alert('Rayuan denda RM5 belum diluluskan Admin.'); return false; } }
+                    if (mins >= 660) { setReasonModal({ show: true, type: 'Masuk Lewat (Melebihi 11 Pagi)', action: 'clockIn', penaltyType: 'Absent', penaltyValue: 'Absent' }); }
+                    else if (mins >= 540) { setReasonModal({ show: true, type: 'Masuk Lewat (Potongan 50%)', action: 'clockIn', penaltyType: 'HalfPay', penaltyValue: 'HalfPay' }); }
+                    else if (mins >= 525) { setReasonModal({ show: true, type: 'Masuk Lewat (Denda RM10)', action: 'clockIn', penaltyType: 'DendaRM10', penaltyValue: 10 }); }
+                    else if (mins > 495) { setReasonModal({ show: true, type: 'Masuk Lewat (Denda RM5)', action: 'clockIn', penaltyType: 'DendaRM5', penaltyValue: 5 }); }
+                    else { verifyLocationAndExecute('Masuk', () => recordNormal('clockIn')); }
                 } 
                 else if (action === 'clockOut') {
                     const limit = systemSettings.clockOutTime === '17:00' ? 1020 : 990;
-                    if (mins < limit) { const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Keluar Awal'); if (!req) { setReqModal({ show: true, type: 'Keluar Awal', penaltyType: 'EarlyLeave', penaltyValue: 0 }); return false; } if (req.status !== 'Lulus') { alert('Mohon balik awal belum diluluskan Admin.'); return false; } }
+                    if (mins < limit) { setReasonModal({ show: true, type: 'Balik Awal', action: 'clockOut', penaltyType: 'EarlyLeave', penaltyValue: 0 }); }
+                    else { verifyLocationAndExecute('Keluar', () => recordNormal('clockOut')); }
                 }
-                return true;
-            };
-
-            const record = async (field) => {
-                const time = new Date().toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', hour12: true });
-                try {
-                    if (att.id) await db.collection('attendances').doc(att.id).update({ [field]: time });
-                    else await db.collection('attendances').add({ userId: currentUser.id, date: today, [field]: time, clockIn:null, clockOut:null, breakOut:null, breakIn:null, otIn:null, otOut:null });
-                    alert(`Berjaya merekod waktu: ${time}`);
-                } catch (e) { alert(e.message); }
+                else {
+                    verifyLocationAndExecute(action, () => recordNormal(action));
+                }
             };
 
             return (
-                <div className="min-h-screen bg-gray-50 pb-20 relative">
+                <div className="min-h-screen bg-gray-50 pb-20 relative text-sm">
                     <div className="bg-green-600 text-white p-4 sticky top-0 z-10 flex justify-between items-center shadow-md">
-                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold text-sm truncate w-40 uppercase">{currentUser.name}</h1><p className="text-[10px] opacity-80 uppercase font-black tracking-widest leading-none">Pekerja</p></div></div>
+                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold text-sm truncate w-40 uppercase">{currentUser.name}</h1><p className="text-[10px] opacity-80 uppercase font-black leading-none tracking-widest">Portal Pekerja</p></div></div>
                         <button onClick={() => setCurrentUser(null)} className="p-2 bg-green-700 rounded-full"><IconLogOut size={16} /></button>
                     </div>
 
-                    {reqModal.show && (
-                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div className="bg-white rounded-3xl p-7 w-full max-w-sm shadow-2xl border-4 border-orange-500 uppercase"><h2 className="text-2xl font-black text-gray-800 tracking-tight">{reqModal.type}</h2><div className="mt-3 p-4 bg-orange-50 rounded-2xl border border-orange-100 text-orange-800 font-black text-[11px] leading-tight">{reqModal.penaltyType === 'Absent' ? '🔴 HADIR SELEPAS 11 AM = TIDAK HADIR.' : reqModal.penaltyType === 'HalfPay' ? '🟠 HADIR SELEPAS 9 AM = POTONG SEPARUH GAJI.' : reqModal.penaltyType === 'DendaRM10' ? '🟡 HADIR SELEPAS 8:45 AM = DENDA RM10.' : reqModal.penaltyType === 'DendaRM5' ? '🟡 HADIR SELEPAS 8:15 AM = DENDA RM5.' : 'Mohon kelulusan balik awal.'}</div><p className="text-[10px] text-gray-500 mt-4 font-bold tracking-widest">Berikan alasan rayuan:</p><form onSubmit={async (e) => { e.preventDefault(); try { await db.collection('special_requests').add({ userId: currentUser.id, type: reqModal.type, date: today, reason: reqReason, status: 'Pending', penaltyType: reqModal.penaltyType, penaltyValue: reqModal.penaltyValue, timestamp: Date.now() }); setReqModal({show:false,type:''}); setReqReason(''); alert('Hantar! Tunggu kelulusan Admin.'); } catch(e){alert(e.message);} }} className="space-y-4 mt-3"><textarea value={reqReason} onChange={e => setReqReason(e.target.value)} className="w-full border-2 border-gray-100 p-4 rounded-2xl h-28 bg-gray-50 outline-none focus:border-orange-500 font-bold text-xs" required></textarea><div className="flex gap-2"><button type="submit" className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-md">Hantar</button><button type="button" onClick={()=>setReqModal({show:false,type:''})} className="flex-1 bg-gray-100 text-gray-400 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">Batal</button></div></form></div></div>
+                    {reasonModal.show && (
+                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                            <div className="bg-white rounded-3xl p-7 w-full max-w-sm shadow-2xl border-4 border-orange-500 uppercase">
+                                <h2 className="text-xl font-black text-gray-800 tracking-tight">{reasonModal.type}</h2>
+                                <div className="mt-3 p-4 bg-orange-50 rounded-2xl border border-orange-100 text-orange-800 font-black text-[11px] leading-tight">
+                                    {reasonModal.penaltyType === 'Absent' ? '🔴 ANDA HADIR SELEPAS 11 AM. STATUS DENDA: TIDAK HADIR.' : 
+                                     reasonModal.penaltyType === 'HalfPay' ? '🟠 ANDA HADIR SELEPAS 9 AM. POTONGAN: SEPARUH GAJI.' : 
+                                     reasonModal.penaltyType === 'DendaRM10' ? '🟡 ANDA HADIR SELEPAS 8:45 AM. DENDA RM10.' : 
+                                     reasonModal.penaltyType === 'DendaRM5' ? '🟡 ANDA HADIR SELEPAS 8:15 AM. DENDA RM5.' : 'Anda merekodkan waktu balik sebelum waktu rasmi.'}
+                                </div>
+                                <p className="text-[10px] text-gray-500 mt-4 font-bold tracking-widest">SILA NYATAKAN SEBAB ANDA:</p>
+                                <form onSubmit={submitReasonAndRecord} className="space-y-4 mt-3">
+                                    <textarea value={inputReason} onChange={e => setInputReason(e.target.value)} className="w-full border-2 border-gray-100 p-4 rounded-2xl h-28 bg-gray-50 outline-none focus:border-orange-500 font-bold text-xs" required placeholder="Tuliskan sebab (wajib)..."></textarea>
+                                    <div className="flex gap-2">
+                                        <button type="submit" className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-md transition-all active:scale-95">Teruskan Clock In</button>
+                                        <button type="button" onClick={()=>setReasonModal({show:false})} className="flex-1 bg-gray-100 text-gray-400 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95">Batal</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     )}
 
                     <div className="p-4 max-w-md mx-auto space-y-6 mt-2">
@@ -420,43 +562,49 @@
 
                         {tab === 'kehadiran' && (
                             <div className="space-y-6 uppercase">
-                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1.5 bg-green-500"></div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status Kedai : {systemSettings.clockOutTime === '17:00' ? 'Balik 5:00 PM' : 'Balik 4:30 PM'}</p><h2 className="text-2xl font-black text-gray-800 tracking-tight leading-none">{new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long' })}</h2></div>
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1.5 bg-green-500"></div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 font-black">Status Kedai : {systemSettings.clockOutTime === '17:00' ? 'Balik 5:00 PM' : 'Balik 4:30 PM'}</p><h2 className="text-2xl font-black text-gray-800 tracking-tight leading-none">{new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long' })}</h2></div>
                                 
-                                {currentPenalty && (
-                                    <div className={`p-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center justify-between border-2 ${currentPenalty.status === 'Lulus' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200 animate-pulse'}`}>
-                                        <span>INFO DENDA: {currentPenalty.penaltyType === 'Absent' ? 'TIDAK HADIR' : currentPenalty.penaltyType === 'HalfPay' ? 'POTONG 50%' : `POTONGAN RM${currentPenalty.penaltyValue}`}</span>
-                                        <span className="bg-white px-2 py-1 rounded-lg">{currentPenalty.status === 'Lulus' ? 'DIBATALKAN' : 'AKTIF'}</span>
+                                {/* INFO KOTAK STATUS UNTUK PEKERJA JIKA ADA DENDA */}
+                                {att.penaltyType && (
+                                    <div className={`p-4 rounded-2xl font-black text-[10px] tracking-widest flex flex-col gap-2 border-2 ${att.penaltyStatus === 'Dikecualikan' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span>DENDA HARI INI: {att.penaltyType === 'Absent' ? 'TIDAK HADIR' : att.penaltyType === 'HalfPay' ? 'POTONG 50%' : att.penaltyType === 'EarlyLeave' ? 'BALIK AWAL' : `RM${att.penaltyValue}`}</span>
+                                            <span className="bg-white px-2 py-1 rounded-lg text-[9px] shadow-sm">{att.penaltyStatus || 'PENDING'}</span>
+                                        </div>
+                                        {att.penaltyStatus === 'Pending' && <p className="text-[9px] text-gray-500 normal-case italic">* Menunggu pengesahan daripada pihak Admin.</p>}
                                     </div>
                                 )}
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <button disabled={att.clockIn} onClick={() => { if(checkTimeLimit('clockIn')) verifyLocationAndExecute('Masuk', () => record('clockIn')); }} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${att.clockIn ? 'bg-gray-50 text-gray-200' : 'bg-green-500 text-white active:scale-90 hover:bg-green-600'}`}><IconClock size={36}/><span className="font-black text-xs uppercase tracking-widest">Clock In</span>{att.clockIn && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockIn}</span>}</button>
-                                    <button disabled={!att.clockIn || att.clockOut} onClick={() => { if(checkTimeLimit('clockOut')) verifyLocationAndExecute('Keluar', () => record('clockOut')); }} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${(!att.clockIn || att.clockOut) ? 'bg-gray-50 text-gray-200' : 'bg-red-500 text-white active:scale-90 hover:bg-red-600'}`}><IconLogOut size={36}/><span className="font-black text-xs uppercase tracking-widest">Clock Out</span>{att.clockOut && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockOut}</span>}</button>
+                                    <button disabled={att.clockIn} onClick={() => initiateAction('clockIn')} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${att.clockIn ? 'bg-gray-50 text-gray-200' : 'bg-green-500 text-white active:scale-90 hover:bg-green-600'}`}><IconClock size={36}/><span className="font-black text-xs uppercase tracking-widest">Clock In</span>{att.clockIn && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockIn}</span>}</button>
+                                    <button disabled={!att.clockIn || att.clockOut} onClick={() => initiateAction('clockOut')} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${(!att.clockIn || att.clockOut) ? 'bg-gray-50 text-gray-200' : 'bg-red-500 text-white active:scale-90 hover:bg-red-600'}`}><IconLogOut size={36}/><span className="font-black text-xs uppercase tracking-widest">Clock Out</span>{att.clockOut && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockOut}</span>}</button>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4"><button disabled={!att.clockIn || att.breakOut} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakOut'))} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.clockIn || att.breakOut) ? 'bg-gray-100 text-gray-300' : 'bg-yellow-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase tracking-widest">Keluar Rehat</span>{att.breakOut && <span className="text-[10px] font-black">{att.breakOut}</span>}</button><button disabled={!att.breakOut || att.breakIn} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakIn'))} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.breakOut || att.breakIn) ? 'bg-gray-100 text-gray-300' : 'bg-blue-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase tracking-widest">Masuk Rehat</span>{att.breakIn && <span className="text-[10px] font-black">{att.breakIn}</span>}</button></div>
+                                <div className="grid grid-cols-2 gap-4"><button disabled={!att.clockIn || att.breakOut} onClick={() => initiateAction('breakOut')} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.clockIn || att.breakOut) ? 'bg-gray-100 text-gray-300' : 'bg-yellow-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase tracking-widest">Keluar Rehat</span>{att.breakOut && <span className="text-[10px] font-black">{att.breakOut}</span>}</button><button disabled={!att.breakOut || att.breakIn} onClick={() => initiateAction('breakIn')} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.breakOut || att.breakIn) ? 'bg-gray-100 text-gray-300' : 'bg-blue-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase tracking-widest">Masuk Rehat</span>{att.breakIn && <span className="text-[10px] font-black">{att.breakIn}</span>}</button></div>
                             </div>
                         )}
-
-                        {tab === 'umum' && (
-                            <div className="bg-white p-7 rounded-3xl shadow-sm border border-gray-100 space-y-4">
-                                <h2 className="font-black text-gray-800 border-b pb-4 uppercase tracking-widest text-sm flex items-center gap-2"><IconCalendar className="text-blue-500"/> Cuti Umum 2026</h2>
-                                {publicHolidays2026.map(ph => (
-                                    <div key={ph.id} className="flex gap-5 p-3 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-gray-100 uppercase"><div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">{ph.id}</div><div><p className="font-black text-[12px] text-gray-800 tracking-tight leading-tight">{ph.event}</p><p className="text-[10px] text-gray-400 font-bold tracking-widest mt-0.5">{ph.dateStr}</p></div></div>
-                                ))}
-                            </div>
-                        )}
-
+                        {/* Selebihnya kod (Mohon Cuti, Umum, dsb) kekal sama */}
                         {tab === 'mohon_cuti' && (
-                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 uppercase"><h2 className="font-black text-gray-800 mb-5 tracking-widest text-sm">Borang Cuti</h2><form onSubmit={async (e) => { e.preventDefault(); try { const f = e.target; await db.collection('leaves').add({ userId: currentUser.id, type: f.type.value, date: f.date.value, reason: f.reason.value, status: 'Pending', timestamp: Date.now() }); alert("Permohonan dihantar!"); setTab('rekod_cuti'); } catch(e){alert(e.message);} }} className="space-y-4"><select name="type" className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs uppercase"><option>Cuti Bergaji</option><option>Cuti Tanpa Gaji</option><option>Cuti Sakit (MC)</option><option>Cuti Kecemasan</option></select><input type="date" name="date" min={today} className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs" required /><textarea name="reason" placeholder="Berikan sebab cuti..." className="w-full border-2 p-3 rounded-xl bg-gray-50 h-24 resize-none font-bold text-xs" required></textarea><button type="submit" className="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-green-700 uppercase text-xs tracking-widest">Hantar</button></form></div>
+                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 uppercase"><h2 className="font-black text-gray-800 mb-5 tracking-widest text-sm uppercase">Borang Cuti</h2><form onSubmit={async (e) => { e.preventDefault(); try { const f = e.target; await db.collection('leaves').add({ userId: currentUser.id, type: f.type.value, date: f.date.value, reason: f.reason.value, status: 'Pending', timestamp: Date.now() }); alert("Permohonan dihantar!"); setTab('rekod_cuti'); } catch(e){alert(e.message);} }} className="space-y-4"><select name="type" className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs uppercase tracking-widest outline-none focus:border-blue-500"><option>Cuti Bergaji</option><option>Cuti Tanpa Gaji</option><option>Cuti Sakit (MC)</option><option>Cuti Kecemasan</option></select><input type="date" name="date" min={today} className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs outline-none focus:border-blue-500" required /><textarea name="reason" placeholder="Alasan Cuti..." className="w-full border-2 p-3 rounded-xl bg-gray-50 h-24 resize-none font-bold text-xs outline-none focus:border-blue-500" required></textarea><button type="submit" className="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-green-700 uppercase text-xs tracking-widest transition-all">Hantar Permohonan</button></form></div>
                         )}
 
                         {tab === 'rekod_cuti' && (
                             <div className="space-y-4 uppercase">
                                 <h2 className="font-black text-gray-800 uppercase tracking-widest text-sm">Rekod Cuti Saya</h2>
-                                {leaves.filter(l => l.userId === currentUser.id).length === 0 ? <p className="text-center text-gray-300 py-10 font-bold text-xs italic">Tiada rekod cuti.</p> :
+                                {leaves.filter(l => l.userId === currentUser.id).length === 0 ? <p className="text-center text-gray-300 py-10 font-bold text-xs italic">Tiada rekod.</p> :
                                 leaves.filter(l => l.userId === currentUser.id).slice().reverse().map((l, i) => (
                                     <div key={i} className="bg-white p-5 rounded-2xl border shadow-sm flex justify-between items-center transition-all hover:bg-gray-50/50"><div><h3 className="font-black text-gray-800 text-xs">{l.type}</h3><p className="text-[10px] text-gray-400 font-bold mt-0.5">{l.date}</p></div><span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${l.status==='Lulus'?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}`}>{l.status}</span></div>
                                 ))}
+                            </div>
+                        )}
+
+                        {tab === 'umum' && (
+                            <div className="bg-white p-7 rounded-3xl shadow-sm border border-gray-100 space-y-4">
+                                <h2 className="font-black text-gray-800 border-b pb-4 uppercase tracking-widest text-sm flex items-center gap-2"><IconCalendar className="text-blue-500"/> Jadual Cuti Umum</h2>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {publicHolidays2026.map(ph => (
+                                        <div key={ph.id} className="flex gap-5 p-3 hover:bg-gray-50 rounded-2xl transition-all uppercase"><div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-[10px] shrink-0">{ph.id}</div><div><p className="font-black text-[12px] text-gray-800 leading-tight">{ph.event}</p><p className="text-[10px] text-gray-400 font-bold tracking-widest mt-0.5">{ph.dateStr}</p></div></div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
