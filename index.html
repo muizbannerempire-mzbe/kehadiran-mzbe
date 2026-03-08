@@ -28,7 +28,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- ICONS ---
+        // --- IKON ---
         const IconUser = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
         const IconUserPlus = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="16" x2="22" y1="11" y2="11"/></svg>;
         const IconClock = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
@@ -42,7 +42,7 @@
         const IconMap = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>;
         const IconPrinter = ({ size=24, className="" }) => <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>;
 
-        // --- DATA CUTI UMUM 2026 (IKUT GAMBAR) ---
+        // --- DATA CUTI UMUM 2026 (BERDASARKAN GAMBAR ANDA) ---
         const publicHolidays2026 = [
             { id: 1, dateStr: '17 Januari (Sabtu)', event: 'Israk Mikraj' },
             { id: 2, dateStr: '17 Feb (Selasa)', event: 'Tahun Baru Cina' },
@@ -71,6 +71,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        // Senarai Pekerja Asal untuk "Sync"
         const originalWorkers = [
             { id: 'MZBE072022', name: 'NUR MAISARAH BINTI AHMAD RIZAL', password: 'MZBE072022', role: 'pekerja' },
             { id: 'MZBE082022', name: 'WAN ADIB ASHRAF BIN AB WAHAB', password: 'MZBE082022', role: 'pekerja' },
@@ -90,7 +91,9 @@
             const [usernameInput, setUsernameInput] = useState('');
             const [passwordInput, setPasswordInput] = useState('');
             const [loginError, setLoginError] = useState('');
-            const [systemSettings, setSystemSettings] = useState({ clockOutTime: '17:00', storeLat: 5.76981, storeLng: 102.56142, bypassGps: false });
+            const [systemSettings, setSystemSettings] = useState({ 
+                clockOutTime: '17:00', storeLat: 5.76981, storeLng: 102.56142, bypassGps: false 
+            });
             
             const [leaves, setLeaves] = useState([]);
             const [attendances, setAttendances] = useState([]);
@@ -148,7 +151,7 @@
             const BrandLogo = ({ size = "large" }) => (
                 <div className={`flex flex-col items-center justify-center ${size === 'large' ? 'mb-8' : 'mb-0 shrink-0'}`}>
                     <img src="./logo.png" alt="MBE" style={{ height: size === 'large' ? '120px' : '42px', width: 'auto', objectFit: 'contain' }} className={size === 'large' ? 'mb-3' : 'bg-white rounded p-1'} onError={e => { e.target.onerror=null; e.target.src="https://placehold.co/100x100/2563eb/ffffff?text=MBE"; }} />
-                    {size === 'large' && <div className="text-center"><h1 className="text-2xl font-black text-gray-800 tracking-tight leading-none uppercase">Muiz Banner</h1><p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Empire</p></div>}
+                    {size === 'large' && <div className="text-center"><h1 className="text-2xl font-black text-gray-800 tracking-tight uppercase">Muiz Banner</h1><p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Empire</p></div>}
                 </div>
             );
 
@@ -184,7 +187,7 @@
         }
 
         // ==========================================
-        // ADMIN DASHBOARD
+        // PANEL ADMIN
         // ==========================================
         function AdminDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, dbUsers, staticAdmins, systemSettings, BrandLogo }) {
             const [tab, setTab] = useState('kehadiran');
@@ -212,9 +215,8 @@
                     return true;
                 };
                 const userAtt = attendances.filter(a => (uid === 'ALL' || a.userId === uid) && isDateInPeriod(a.date));
-                const userLeaves = leaves.filter(l => (uid === 'ALL' || l.userId === uid) && l.status === 'Lulus' && isDateInPeriod(l.date));
-                
                 const requests = specialRequests.filter(r => (uid === 'ALL' || r.userId === uid) && isDateInPeriod(r.date));
+                
                 const penaltyRM5 = requests.filter(r => r.penaltyValue === 5 && r.status !== 'Lulus').length;
                 const penaltyRM10 = requests.filter(r => r.penaltyValue === 10 && r.status !== 'Lulus').length;
                 const halfPay = requests.filter(r => r.penaltyValue === 'HalfPay' && r.status !== 'Lulus').length;
@@ -229,7 +231,7 @@
                 <div className="min-h-screen bg-gray-50 pb-20 no-print">
                     <div className="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center">
                         <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold uppercase tracking-tight">Panel Admin</h1><p className="text-[10px] opacity-80 uppercase font-black">{currentUser.name}</p></div></div>
-                        <button onClick={() => setCurrentUser(null)} className="p-2 bg-blue-700 rounded-full"><IconLogOut size={18} /></button>
+                        <button onClick={() => setCurrentUser(null)} className="p-2 bg-blue-700 rounded-full hover:bg-blue-800"><IconLogOut size={18} /></button>
                     </div>
 
                     <div className="p-4 max-w-5xl mx-auto space-y-6">
@@ -241,24 +243,96 @@
                             ))}
                         </div>
 
+                        {/* TAB: KEHADIRAN (DENGAN PAPARAN DENDA) */}
+                        {tab === 'kehadiran' && (
+                             <div className="space-y-4">
+                                {attendances.slice().reverse().map((att, i) => {
+                                    const user = [...dbUsers, ...staticAdmins].find(u => u.id === att.userId);
+                                    // Cari jika ada denda/rayuan untuk rekod ini
+                                    const req = specialRequests.find(r => r.userId === att.userId && r.date === att.date && r.type === 'Masuk Lambat');
+                                    
+                                    return (
+                                        <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+                                            <div className="flex justify-between border-b pb-2 mb-2 font-black text-gray-800 uppercase text-xs"><span>{user?.name || att.userId}</span><span className="text-[9px] text-gray-400 font-bold">{att.date}</span></div>
+                                            <div className="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase"><div>Masuk: <span className="text-blue-600">{att.clockIn || '-'}</span></div><div>Keluar: <span className="text-red-600">{att.clockOut || '-'}</span></div><div>Rehat: <span>{att.breakOut || '-'} / {att.breakIn || '-'}</span></div><div className="text-purple-600">OT: {att.otIn || '-'} / {att.otOut || '-'}</div></div>
+                                            
+                                            {/* PAPARAN DENDA DI BAWAH REKOD */}
+                                            {req && (
+                                                <div className={`mt-3 p-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-between ${req.status === 'Lulus' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                                                    <span>STATUS DENDA: {req.penaltyType === 'Absent' ? 'TIDAK HADIR' : req.penaltyType === 'HalfPay' ? 'POTONG 50%' : `RM${req.penaltyValue}`}</span>
+                                                    <span className="bg-white px-2 py-0.5 rounded-full shadow-sm">{req.status === 'Lulus' ? 'DIBATALKAN' : 'AKTIF'}</span>
+                                                </div>
+                                            )}
+
+                                            <button onClick={async () => { if(confirm("Padam rekod ini?")) await db.collection('attendances').doc(att.id).delete(); }} className="mt-3 w-full text-gray-300 hover:text-red-500 text-[9px] py-1 bg-gray-50 hover:bg-red-50 rounded-lg flex items-center justify-center gap-2 font-black uppercase transition-all border border-transparent hover:border-red-100"><IconTrash2 size={12}/> Padam</button>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+
+                        {/* TAB: KEBENARAN MASA */}
+                        {tab === 'kebenaran' && (
+                            <div className="space-y-4">
+                                <h2 className="font-black text-gray-700 uppercase tracking-widest text-sm flex items-center gap-2"><IconCheckCircle size={18} className="text-orange-500"/> Kelulusan Rayuan Masa</h2>
+                                {specialRequests.length === 0 ? (
+                                    <div className="bg-white p-10 rounded-3xl border-2 border-dashed border-gray-200 text-center text-gray-400 font-bold uppercase text-xs">Tiada rekod rayuan.</div>
+                                ) : (
+                                    specialRequests.slice().reverse().map((req, i) => {
+                                        const u = [...dbUsers, ...staticAdmins].find(x => x.id === req.userId);
+                                        return (
+                                            <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div><h3 className="font-black text-gray-800 text-sm uppercase">{u?.name || req.userId}</h3><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{req.date} • <span className="text-blue-600">{req.type}</span></p></div>
+                                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${req.status==='Lulus'?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}`}>{req.status}</span>
+                                                </div>
+                                                <div className="bg-gray-50 p-4 rounded-2xl border-l-4 border-blue-500 mb-4 font-medium text-xs italic">"{req.reason}"</div>
+                                                {req.penaltyType && (
+                                                    <div className="mb-4 bg-red-50 p-3 rounded-xl border border-red-100">
+                                                        <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">Penalti Lewat:</p>
+                                                        <p className="text-sm font-black text-red-800 uppercase">{req.penaltyType === 'Absent' ? 'DIKIRA TIDAK HADIR' : req.penaltyType === 'HalfPay' ? 'POTONG SEPARUH GAJI' : `POTONGAN RM${req.penaltyValue}`}</p>
+                                                    </div>
+                                                )}
+                                                {req.status === 'Pending' && (
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => handleStatusRequest(req.id, 'Lulus')} className="flex-1 bg-green-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-green-600 transition-all tracking-widest">Lulus (Batal Denda)</button>
+                                                        <button onClick={() => handleStatusRequest(req.id, 'Ditolak')} className="flex-1 bg-red-500 text-white font-black py-3 rounded-2xl text-[10px] uppercase shadow-md hover:bg-red-600 transition-all tracking-widest">Tolak Rayuan</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })
+                                )}
+                            </div>
+                        )}
+
+                        {/* TAB: ANALISA */}
                         {tab === 'analisa' && (
                             <div className="space-y-4">
                                 <div className="bg-white p-6 rounded-3xl shadow-sm space-y-6 border border-gray-100">
-                                    <div className="flex items-center justify-between"><h2 className="font-black text-gray-800 flex items-center gap-2 uppercase tracking-wide"><IconChartBar className="text-blue-500"/> Analisa</h2><button onClick={() => window.print()} className="bg-gray-100 p-2 rounded-lg"><IconPrinter size={20}/></button></div>
+                                    <div className="flex items-center justify-between"><h2 className="font-black text-gray-800 flex items-center gap-2 uppercase tracking-wide"><IconChartBar className="text-blue-500"/> Analisa Pekerja</h2><button onClick={() => window.print()} className="bg-gray-100 p-2 rounded-lg"><IconPrinter size={20}/></button></div>
                                     <div className="flex gap-2"><select value={analisaPeriod} onChange={e => setAnalisaPeriod(e.target.value)} className="flex-1 p-3 bg-gray-50 border-2 rounded-xl font-bold text-xs"><option>Minggu Ini</option><option>Bulan Ini</option><option>Tahun Ini</option><option>Semua Masa</option></select><select value={analisaUser} onChange={e => setAnalisaUser(e.target.value)} className="flex-[2] p-3 bg-gray-50 border-2 rounded-xl font-bold text-xs uppercase"><option value="ALL">Semua Pekerja</option>{allPekerja.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center"><p className="text-[9px] text-blue-600 font-black uppercase">HADIR</p><p className="text-3xl font-black">{summary.hadir}</p></div>
-                                        <div className="bg-red-50 p-4 rounded-2xl border border-red-100 text-center"><p className="text-[9px] text-red-600 font-black uppercase">DENDA (RM)</p><p className="text-3xl font-black">{summary.dendaWang}</p></div>
-                                        <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center"><p className="text-[9px] text-orange-600 font-black uppercase">SEPARUH GAJI</p><p className="text-3xl font-black">{summary.separuhGaji}</p></div>
-                                        <div className="bg-gray-900 p-4 rounded-2xl text-white text-center"><p className="text-[9px] font-black uppercase">TIDAK HADIR</p><p className="text-3xl font-black text-red-400">{summary.tidakHadir}</p></div>
+                                        <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center shadow-sm"><p className="text-[9px] text-blue-600 font-black uppercase">HADIR</p><p className="text-3xl font-black">{summary.hadir}</p></div>
+                                        <div className="bg-red-50 p-4 rounded-2xl border border-red-100 text-center shadow-sm"><p className="text-[9px] text-red-600 font-black uppercase">DENDA (RM)</p><p className="text-3xl font-black">RM{summary.dendaWang}</p></div>
+                                        <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center shadow-sm"><p className="text-[9px] text-orange-600 font-black uppercase tracking-tight">POTONG SEPARUH</p><p className="text-3xl font-black">{summary.separuhGaji}</p></div>
+                                        <div className="bg-gray-900 p-4 rounded-2xl text-white text-center shadow-lg"><p className="text-[9px] font-black uppercase">TIDAK HADIR</p><p className="text-3xl font-black text-red-400">{summary.tidakHadir}</p></div>
                                     </div>
                                 </div>
                             </div>
                         )}
 
+                        {/* TAB: STAF */}
+                        {tab === 'staf' && (
+                             <div className="space-y-6 uppercase">
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUserPlus size={18}/> Tambah Staf</h2><form onSubmit={async (e) => { e.preventDefault(); const cid = newStaf.id.trim().toUpperCase(); await db.collection('users').doc(cid).set({ ...newStaf, id: cid, role: 'pekerja' }); setNewStaf({ name: '', id: '', password: '' }); alert("Pekerja berjaya didaftarkan!"); }} className="grid grid-cols-1 md:grid-cols-4 gap-4"><input type="text" placeholder="Nama Penuh" value={newStaf.name} onChange={e => setNewStaf({...newStaf, name: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none focus:border-blue-500 font-bold text-xs" required /><input type="text" placeholder="ID Pekerja" value={newStaf.id} onChange={e => setNewStaf({...newStaf, id: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none uppercase font-bold text-xs" required /><input type="text" placeholder="Kata Laluan" value={newStaf.password} onChange={e => setNewStaf({...newStaf, password: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none font-bold text-xs" required /><button type="submit" className="bg-blue-600 text-white font-black py-3 rounded-xl uppercase text-xs shadow-lg tracking-widest transition-all active:scale-95">Daftar Staf</button></form></div>
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUser size={18}/> Senarai Staf Aktif</h2><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead><tr className="bg-gray-50 text-[10px] text-gray-400 font-black uppercase"><th className="p-4">Nama Pekerja</th><th className="p-4 text-center">ID / Pass</th><th className="p-4 text-center">Tindakan</th></tr></thead><tbody>{dbUsers.map(u => (<tr key={u.id} className="border-b border-gray-50 transition-colors hover:bg-gray-50/50"><td className="p-4 font-bold text-gray-700 text-xs">{u.name}</td><td className="p-4 text-center text-[10px] font-mono">{u.id} / {u.password}</td><td className="p-4 text-center"><button onClick={async () => { if(confirm(`Padam staf ${u.id}?`)) await db.collection('users').doc(u.id).delete(); }} className="text-red-400 hover:text-red-600 p-2 transition-all"><IconTrash2 size={16}/></button></td></tr>))}</tbody></table></div></div>
+                             </div>
+                        )}
+
                         {tab === 'umum' && (
                             <div className="bg-white p-7 rounded-3xl shadow-sm border border-gray-100 space-y-4">
-                                <h2 className="font-black text-gray-800 border-b pb-4 uppercase tracking-widest text-sm flex items-center gap-2"><IconCalendar className="text-blue-500"/> Cuti Umum 2026</h2>
+                                <h2 className="font-black text-gray-800 border-b pb-4 uppercase tracking-widest text-sm flex items-center gap-2"><IconCalendar className="text-blue-500"/> Jadual Cuti Umum 2026</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                     {publicHolidays2026.map(ph => (
                                         <div key={ph.id} className="flex gap-4 p-3 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-gray-100">
@@ -270,22 +344,14 @@
                             </div>
                         )}
 
-                        {tab === 'staf' && (
-                             <div className="space-y-6 uppercase">
-                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUserPlus size={18}/> Tambah Staf</h2><form onSubmit={async (e) => { e.preventDefault(); const cid = newStaf.id.trim().toUpperCase(); await db.collection('users').doc(cid).set({ ...newStaf, id: cid, role: 'pekerja' }); setNewStaf({ name: '', id: '', password: '' }); alert("Berjaya!"); }} className="grid grid-cols-1 md:grid-cols-4 gap-4"><input type="text" placeholder="Nama" value={newStaf.name} onChange={e => setNewStaf({...newStaf, name: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none focus:border-blue-500 font-bold text-xs" required /><input type="text" placeholder="ID" value={newStaf.id} onChange={e => setNewStaf({...newStaf, id: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none uppercase font-bold text-xs" required /><input type="text" placeholder="Pass" value={newStaf.password} onChange={e => setNewStaf({...newStaf, password: e.target.value})} className="p-3 border rounded-xl bg-gray-50 outline-none font-bold text-xs" required /><button type="submit" className="bg-blue-600 text-white font-black py-3 rounded-xl uppercase text-xs">Daftar</button></form></div>
-                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100"><h2 className="font-black text-gray-800 uppercase flex items-center gap-2 mb-4"><IconUser size={18}/> Senarai Staf</h2><div className="overflow-x-auto"><table className="w-full text-left border-collapse"><thead><tr className="bg-gray-50 text-[10px] text-gray-400 font-black uppercase"><th className="p-4">Nama</th><th className="p-4 text-center">ID / Pass</th><th className="p-4 text-center">Aksi</th></tr></thead><tbody>{dbUsers.map(u => (<tr key={u.id} className="border-b border-gray-50"><td className="p-4 font-bold text-gray-700 text-xs">{u.name}</td><td className="p-4 text-center text-[10px] font-mono">{u.id} / {u.password}</td><td className="p-4 text-center"><button onClick={async () => { if(confirm("Padam?")) await db.collection('users').doc(u.id).delete(); }} className="text-red-500 p-2"><IconTrash2 size={16}/></button></td></tr>))}</tbody></table></div></div>
-                             </div>
-                        )}
-
-                        {/* Selebihnya kod Admin (Tetapan, Kehadiran, Kebenaran) kekal seperti turn sebelumnya */}
                         {tab === 'tetapan' && (
                              <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-6">
-                                <h2 className="font-black text-gray-800 uppercase text-sm border-b pb-4"><IconSettings size={18}/> Konfigurasi</h2>
+                                <h2 className="font-black text-gray-800 uppercase text-sm border-b pb-4"><IconSettings size={18}/> Kawalan Sistem</h2>
                                 <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100 space-y-6">
-                                    <div className="flex items-center justify-between"><div><p className="text-[10px] font-black text-blue-800 uppercase tracking-widest">Waktu Balik</p></div><button onClick={async () => { const nt = systemSettings.clockOutTime === '17:00' ? '16:30' : '17:00'; await db.collection('settings').doc('config').set({ clockOutTime: nt }, { merge: true }); }} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-black text-lg shadow-xl uppercase">{systemSettings.clockOutTime === '17:00' ? '5:00 PM' : '4:30 PM'}</button></div>
-                                    <div className="pt-4 border-t border-blue-100"><p className="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">GPS 150M</p><button onClick={() => navigator.geolocation.getCurrentPosition(async (pos) => { await db.collection('settings').doc('config').set({ storeLat: pos.coords.latitude, storeLng: pos.coords.longitude }, { merge: true }); alert("Lokasi disimpan!"); })} className="w-full bg-white text-blue-600 border-2 border-blue-100 py-3 rounded-xl font-black text-[10px] uppercase flex items-center justify-center gap-2 active:scale-95"><IconMap size={14}/> Set GPS Saya Sebagai Pusat Kedai</button></div>
+                                    <div className="flex items-center justify-between"><div><p className="text-[10px] font-black text-blue-800 uppercase tracking-widest">Waktu Balik Hari Ini</p></div><button onClick={async () => { const nt = systemSettings.clockOutTime === '17:00' ? '16:30' : '17:00'; await db.collection('settings').doc('config').set({ clockOutTime: nt }, { merge: true }); }} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-black text-lg shadow-xl uppercase transition-all active:scale-95">{systemSettings.clockOutTime === '17:00' ? '5:00 PM' : '4:30 PM'}</button></div>
+                                    <div className="pt-4 border-t border-blue-100"><p className="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">Pusat GPS (150M)</p><button onClick={() => navigator.geolocation.getCurrentPosition(async (pos) => { await db.collection('settings').doc('config').set({ storeLat: pos.coords.latitude, storeLng: pos.coords.longitude }, { merge: true }); alert("Lokasi GPS kedai telah dikemaskini ke titik semasa anda!"); })} className="w-full bg-white text-blue-600 border-2 border-blue-100 py-3 rounded-xl font-black text-[10px] uppercase flex items-center justify-center gap-2 active:scale-95 transition-all"><IconMap size={14}/> Set Lokasi GPS Kedai Di Sini</button></div>
                                 </div>
-                                <div className="flex items-center justify-between p-5 bg-red-50 rounded-2xl border border-red-100"><div><p className="text-[10px] font-black text-red-800 uppercase tracking-widest">Bypass Radius</p></div><button onClick={async () => { await db.collection('settings').doc('config').set({ bypassGps: !systemSettings.bypassGps }, { merge: true }); }} className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase ${systemSettings.bypassGps ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{systemSettings.bypassGps ? 'AKTIF' : 'MATI'}</button></div>
+                                <div className="flex items-center justify-between p-5 bg-red-50 rounded-2xl border border-red-100"><div><p className="text-[10px] font-black text-red-800 uppercase tracking-widest">Bypass Radius (Hanya Ujian)</p></div><button onClick={async () => { await db.collection('settings').doc('config').set({ bypassGps: !systemSettings.bypassGps }, { merge: true }); }} className={`px-6 py-2 rounded-xl font-black text-[10px] uppercase transition-all shadow-md ${systemSettings.bypassGps ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{systemSettings.bypassGps ? 'AKTIF' : 'MATI'}</button></div>
                             </div>
                         )}
                     </div>
@@ -294,7 +360,7 @@
         }
 
         // ==========================================
-        // EMPLOYEE DASHBOARD
+        // PORTAL PEKERJA
         // ==========================================
         function EmployeeDashboard({ currentUser, setCurrentUser, leaves, attendances, specialRequests, systemSettings, verifyLocationAndExecute, BrandLogo }) {
             const [tab, setTab] = useState('kehadiran');
@@ -303,20 +369,24 @@
             const today = new Date().toLocaleDateString('en-CA');
             const att = attendances.find(a => a.userId === currentUser.id && a.date === today) || { clockIn: null, clockOut: null };
 
+            // Cari jika ada denda untuk pekerja hari ini
+            const currentPenalty = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Masuk Lambat');
+
             const checkTimeLimit = (action) => {
                 if (currentUser.id === 'MZBEBOSS001' || currentUser.id === 'ADMIN') return true;
                 const now = new Date();
-                const minutes = now.getHours() * 60 + now.getMinutes();
+                const mins = now.getHours() * 60 + now.getMinutes();
+
                 if (action === 'clockIn') {
                     const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Masuk Lambat');
-                    if (minutes >= 660) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'Absent', penaltyValue: 'Absent' }); return false; } if (req.status !== 'Lulus') { alert('Jam 11 AM telah berlalu. Status: TIDAK HADIR.'); return false; } }
-                    else if (minutes >= 540) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'HalfPay', penaltyValue: 'HalfPay' }); return false; } if (req.status !== 'Lulus') { alert('Tunggu rayuan "Separuh Gaji" diluluskan.'); return false; } }
-                    else if (minutes >= 525) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'DendaRM10', penaltyValue: 10 }); return false; } if (req.status !== 'Lulus') { alert('Tunggu rayuan RM10 diluluskan.'); return false; } }
-                    else if (minutes > 495) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'DendaRM5', penaltyValue: 5 }); return false; } if (req.status !== 'Lulus') { alert('Tunggu rayuan RM5 diluluskan.'); return false; } }
+                    if (mins >= 660) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'Absent', penaltyValue: 'Absent' }); return false; } if (req.status !== 'Lulus') { alert('Hadir selepas 11 AM: TIDAK HADIR. Rayuan anda sedang menunggu kelulusan.'); return false; } }
+                    else if (mins >= 540) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'HalfPay', penaltyValue: 'HalfPay' }); return false; } if (req.status !== 'Lulus') { alert('Rayuan "Separuh Gaji" belum diluluskan Admin.'); return false; } }
+                    else if (mins >= 525) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'DendaRM10', penaltyValue: 10 }); return false; } if (req.status !== 'Lulus') { alert('Rayuan denda RM10 belum diluluskan Admin.'); return false; } }
+                    else if (mins > 495) { if (!req) { setReqModal({ show: true, type: 'Masuk Lambat', penaltyType: 'DendaRM5', penaltyValue: 5 }); return false; } if (req.status !== 'Lulus') { alert('Rayuan denda RM5 belum diluluskan Admin.'); return false; } }
                 } 
                 else if (action === 'clockOut') {
                     const limit = systemSettings.clockOutTime === '17:00' ? 1020 : 990;
-                    if (minutes < limit) { const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Keluar Awal'); if (!req) { setReqModal({ show: true, type: 'Keluar Awal', penaltyType: 'EarlyLeave', penaltyValue: 0 }); return false; } if (req.status !== 'Lulus') { alert('Tunggu kelulusan Keluar Awal.'); return false; } }
+                    if (mins < limit) { const req = specialRequests.find(r => r.userId === currentUser.id && r.date === today && r.type === 'Keluar Awal'); if (!req) { setReqModal({ show: true, type: 'Keluar Awal', penaltyType: 'EarlyLeave', penaltyValue: 0 }); return false; } if (req.status !== 'Lulus') { alert('Mohon balik awal belum diluluskan Admin.'); return false; } }
                 }
                 return true;
             };
@@ -326,19 +396,19 @@
                 try {
                     if (att.id) await db.collection('attendances').doc(att.id).update({ [field]: time });
                     else await db.collection('attendances').add({ userId: currentUser.id, date: today, [field]: time, clockIn:null, clockOut:null, breakOut:null, breakIn:null, otIn:null, otOut:null });
-                    alert(`Berjaya: ${time}`);
+                    alert(`Berjaya merekod waktu: ${time}`);
                 } catch (e) { alert(e.message); }
             };
 
             return (
                 <div className="min-h-screen bg-gray-50 pb-20 relative">
                     <div className="bg-green-600 text-white p-4 sticky top-0 z-10 flex justify-between items-center shadow-md">
-                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold text-sm truncate w-40 uppercase">{currentUser.name}</h1><p className="text-[10px] opacity-80 uppercase font-black tracking-widest leading-none">Portal Pekerja</p></div></div>
+                        <div className="flex items-center gap-3"><BrandLogo size="small" /><div><h1 className="font-bold text-sm truncate w-40 uppercase">{currentUser.name}</h1><p className="text-[10px] opacity-80 uppercase font-black tracking-widest leading-none">Pekerja</p></div></div>
                         <button onClick={() => setCurrentUser(null)} className="p-2 bg-green-700 rounded-full"><IconLogOut size={16} /></button>
                     </div>
 
                     {reqModal.show && (
-                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div className="bg-white rounded-3xl p-7 w-full max-w-sm shadow-2xl border-4 border-orange-500 uppercase"><h2 className="text-2xl font-black text-gray-800 tracking-tight">{reqModal.type}</h2><div className="mt-3 p-4 bg-orange-50 rounded-2xl border border-orange-100 text-orange-800 font-black text-[11px] leading-tight">{reqModal.penaltyType === 'Absent' ? '🔴 HADIR SELEPAS 11 AM = TIDAK HADIR.' : reqModal.penaltyType === 'HalfPay' ? '🟠 HADIR SELEPAS 9 AM = POTONG SEPARUH GAJI.' : reqModal.penaltyType === 'DendaRM10' ? '🟡 HADIR SELEPAS 8:45 AM = DENDA RM10.' : reqModal.penaltyType === 'DendaRM5' ? '🟡 HADIR SELEPAS 8:15 AM = DENDA RM5.' : 'Mohon kelulusan balik awal.'}</div><p className="text-[10px] text-gray-500 mt-4 font-bold tracking-widest">Sila nyatakan sebab rayuan:</p><form onSubmit={async (e) => { e.preventDefault(); try { await db.collection('special_requests').add({ userId: currentUser.id, type: reqModal.type, date: today, reason: reqReason, status: 'Pending', penaltyType: reqModal.penaltyType, penaltyValue: reqModal.penaltyValue, timestamp: Date.now() }); setReqModal({show:false,type:''}); setReqReason(''); alert('Hantar! Tunggu kelulusan Admin.'); } catch(e){alert(e.message);} }} className="space-y-4 mt-3"><textarea value={reqReason} onChange={e => setReqReason(e.target.value)} className="w-full border-2 border-gray-100 p-4 rounded-2xl h-28 bg-gray-50 outline-none focus:border-orange-500 font-bold text-xs" required></textarea><div className="flex gap-2"><button type="submit" className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-black uppercase text-[10px]">Hantar</button><button type="button" onClick={()=>setReqModal({show:false,type:''})} className="flex-1 bg-gray-100 text-gray-400 py-4 rounded-2xl font-black uppercase text-[10px]">Batal</button></div></form></div></div>
+                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div className="bg-white rounded-3xl p-7 w-full max-w-sm shadow-2xl border-4 border-orange-500 uppercase"><h2 className="text-2xl font-black text-gray-800 tracking-tight">{reqModal.type}</h2><div className="mt-3 p-4 bg-orange-50 rounded-2xl border border-orange-100 text-orange-800 font-black text-[11px] leading-tight">{reqModal.penaltyType === 'Absent' ? '🔴 HADIR SELEPAS 11 AM = TIDAK HADIR.' : reqModal.penaltyType === 'HalfPay' ? '🟠 HADIR SELEPAS 9 AM = POTONG SEPARUH GAJI.' : reqModal.penaltyType === 'DendaRM10' ? '🟡 HADIR SELEPAS 8:45 AM = DENDA RM10.' : reqModal.penaltyType === 'DendaRM5' ? '🟡 HADIR SELEPAS 8:15 AM = DENDA RM5.' : 'Mohon kelulusan balik awal.'}</div><p className="text-[10px] text-gray-500 mt-4 font-bold tracking-widest">Berikan alasan rayuan:</p><form onSubmit={async (e) => { e.preventDefault(); try { await db.collection('special_requests').add({ userId: currentUser.id, type: reqModal.type, date: today, reason: reqReason, status: 'Pending', penaltyType: reqModal.penaltyType, penaltyValue: reqModal.penaltyValue, timestamp: Date.now() }); setReqModal({show:false,type:''}); setReqReason(''); alert('Hantar! Tunggu kelulusan Admin.'); } catch(e){alert(e.message);} }} className="space-y-4 mt-3"><textarea value={reqReason} onChange={e => setReqReason(e.target.value)} className="w-full border-2 border-gray-100 p-4 rounded-2xl h-28 bg-gray-50 outline-none focus:border-orange-500 font-bold text-xs" required></textarea><div className="flex gap-2"><button type="submit" className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-md">Hantar</button><button type="button" onClick={()=>setReqModal({show:false,type:''})} className="flex-1 bg-gray-100 text-gray-400 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">Batal</button></div></form></div></div>
                     )}
 
                     <div className="p-4 max-w-md mx-auto space-y-6 mt-2">
@@ -350,12 +420,20 @@
 
                         {tab === 'kehadiran' && (
                             <div className="space-y-6 uppercase">
-                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1.5 bg-green-500"></div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Kedai: {systemSettings.clockOutTime === '17:00' ? 'Balik 5:00 PM' : 'Balik 4:30 PM'}</p><h2 className="text-2xl font-black text-gray-800 tracking-tight leading-none">{new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long' })}</h2></div>
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center relative overflow-hidden"><div className="absolute top-0 left-0 w-full h-1.5 bg-green-500"></div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status Kedai : {systemSettings.clockOutTime === '17:00' ? 'Balik 5:00 PM' : 'Balik 4:30 PM'}</p><h2 className="text-2xl font-black text-gray-800 tracking-tight leading-none">{new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long' })}</h2></div>
+                                
+                                {currentPenalty && (
+                                    <div className={`p-4 rounded-2xl font-black text-[10px] tracking-widest flex items-center justify-between border-2 ${currentPenalty.status === 'Lulus' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200 animate-pulse'}`}>
+                                        <span>INFO DENDA: {currentPenalty.penaltyType === 'Absent' ? 'TIDAK HADIR' : currentPenalty.penaltyType === 'HalfPay' ? 'POTONG 50%' : `POTONGAN RM${currentPenalty.penaltyValue}`}</span>
+                                        <span className="bg-white px-2 py-1 rounded-lg">{currentPenalty.status === 'Lulus' ? 'DIBATALKAN' : 'AKTIF'}</span>
+                                    </div>
+                                )}
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <button disabled={att.clockIn} onClick={() => { if(checkTimeLimit('clockIn')) verifyLocationAndExecute('Masuk', () => record('clockIn')); }} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${att.clockIn ? 'bg-gray-50 text-gray-200' : 'bg-green-500 text-white active:scale-90 hover:bg-green-600'}`}><IconClock size={36}/><span className="font-black text-xs uppercase tracking-widest">Clock In</span>{att.clockIn && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockIn}</span>}</button>
                                     <button disabled={!att.clockIn || att.clockOut} onClick={() => { if(checkTimeLimit('clockOut')) verifyLocationAndExecute('Keluar', () => record('clockOut')); }} className={`p-6 rounded-3xl flex flex-col items-center gap-3 transition-all shadow-lg ${(!att.clockIn || att.clockOut) ? 'bg-gray-50 text-gray-200' : 'bg-red-500 text-white active:scale-90 hover:bg-red-600'}`}><IconLogOut size={36}/><span className="font-black text-xs uppercase tracking-widest">Clock Out</span>{att.clockOut && <span className="text-[11px] font-black bg-white/20 px-2 py-0.5 rounded-full">{att.clockOut}</span>}</button>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4"><button disabled={!att.clockIn || att.breakOut} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakOut'))} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.clockIn || att.breakOut) ? 'bg-gray-100 text-gray-300' : 'bg-yellow-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase">Keluar Rehat</span>{att.breakOut && <span className="text-[10px] font-black">{att.breakOut}</span>}</button><button disabled={!att.breakOut || att.breakIn} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakIn'))} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.breakOut || att.breakIn) ? 'bg-gray-100 text-gray-300' : 'bg-blue-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase">Masuk Rehat</span>{att.breakIn && <span className="text-[10px] font-black">{att.breakIn}</span>}</button></div>
+                                <div className="grid grid-cols-2 gap-4"><button disabled={!att.clockIn || att.breakOut} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakOut'))} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.clockIn || att.breakOut) ? 'bg-gray-100 text-gray-300' : 'bg-yellow-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase tracking-widest">Keluar Rehat</span>{att.breakOut && <span className="text-[10px] font-black">{att.breakOut}</span>}</button><button disabled={!att.breakOut || att.breakIn} onClick={() => verifyLocationAndExecute('Rehat', () => record('breakIn'))} className={`p-4 rounded-xl flex flex-col items-center transition-all ${(!att.breakOut || att.breakIn) ? 'bg-gray-100 text-gray-300' : 'bg-blue-500 text-white shadow-md'}`}><span className="text-[9px] font-black uppercase tracking-widest">Masuk Rehat</span>{att.breakIn && <span className="text-[10px] font-black">{att.breakIn}</span>}</button></div>
                             </div>
                         )}
 
@@ -363,14 +441,23 @@
                             <div className="bg-white p-7 rounded-3xl shadow-sm border border-gray-100 space-y-4">
                                 <h2 className="font-black text-gray-800 border-b pb-4 uppercase tracking-widest text-sm flex items-center gap-2"><IconCalendar className="text-blue-500"/> Cuti Umum 2026</h2>
                                 {publicHolidays2026.map(ph => (
-                                    <div key={ph.id} className="flex gap-5 p-3 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-gray-100 uppercase"><div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">{ph.id}</div><div><p className="font-black text-[12px] text-gray-800 tracking-tight">{ph.event}</p><p className="text-[10px] text-gray-400 font-bold tracking-widest mt-0.5">{ph.dateStr}</p></div></div>
+                                    <div key={ph.id} className="flex gap-5 p-3 hover:bg-gray-50 rounded-2xl transition-all border border-transparent hover:border-gray-100 uppercase"><div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-[10px] shrink-0 shadow-sm">{ph.id}</div><div><p className="font-black text-[12px] text-gray-800 tracking-tight leading-tight">{ph.event}</p><p className="text-[10px] text-gray-400 font-bold tracking-widest mt-0.5">{ph.dateStr}</p></div></div>
                                 ))}
                             </div>
                         )}
 
-                        {/* Tab-tab cuti kekal sama */}
                         {tab === 'mohon_cuti' && (
-                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 uppercase"><h2 className="font-black text-gray-800 mb-5 tracking-widest text-sm">Borang Cuti</h2><form onSubmit={async (e) => { e.preventDefault(); try { const f = e.target; await db.collection('leaves').add({ userId: currentUser.id, type: f.type.value, date: f.date.value, reason: f.reason.value, status: 'Pending', timestamp: Date.now() }); alert("Permohonan dihantar!"); setTab('rekod_cuti'); } catch(e){alert(e.message);} }} className="space-y-4"><select name="type" className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs uppercase"><option>Cuti Bergaji</option><option>Cuti Tanpa Gaji</option><option>Cuti Sakit (MC)</option><option>Cuti Kecemasan</option></select><input type="date" name="date" min={today} className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs" required /><textarea name="reason" placeholder="Sebab..." className="w-full border-2 p-3 rounded-xl bg-gray-50 h-24 resize-none font-bold text-xs" required></textarea><button type="submit" className="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-green-700 uppercase text-xs">Hantar</button></form></div>
+                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 uppercase"><h2 className="font-black text-gray-800 mb-5 tracking-widest text-sm">Borang Cuti</h2><form onSubmit={async (e) => { e.preventDefault(); try { const f = e.target; await db.collection('leaves').add({ userId: currentUser.id, type: f.type.value, date: f.date.value, reason: f.reason.value, status: 'Pending', timestamp: Date.now() }); alert("Permohonan dihantar!"); setTab('rekod_cuti'); } catch(e){alert(e.message);} }} className="space-y-4"><select name="type" className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs uppercase"><option>Cuti Bergaji</option><option>Cuti Tanpa Gaji</option><option>Cuti Sakit (MC)</option><option>Cuti Kecemasan</option></select><input type="date" name="date" min={today} className="w-full border-2 p-3 rounded-xl bg-gray-50 font-bold text-xs" required /><textarea name="reason" placeholder="Berikan sebab cuti..." className="w-full border-2 p-3 rounded-xl bg-gray-50 h-24 resize-none font-bold text-xs" required></textarea><button type="submit" className="w-full bg-green-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-green-700 uppercase text-xs tracking-widest">Hantar</button></form></div>
+                        )}
+
+                        {tab === 'rekod_cuti' && (
+                            <div className="space-y-4 uppercase">
+                                <h2 className="font-black text-gray-800 uppercase tracking-widest text-sm">Rekod Cuti Saya</h2>
+                                {leaves.filter(l => l.userId === currentUser.id).length === 0 ? <p className="text-center text-gray-300 py-10 font-bold text-xs italic">Tiada rekod cuti.</p> :
+                                leaves.filter(l => l.userId === currentUser.id).slice().reverse().map((l, i) => (
+                                    <div key={i} className="bg-white p-5 rounded-2xl border shadow-sm flex justify-between items-center transition-all hover:bg-gray-50/50"><div><h3 className="font-black text-gray-800 text-xs">{l.type}</h3><p className="text-[10px] text-gray-400 font-bold mt-0.5">{l.date}</p></div><span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${l.status==='Lulus'?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}`}>{l.status}</span></div>
+                                ))}
+                            </div>
                         )}
                     </div>
                 </div>
